@@ -1,10 +1,12 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Pets Hil — Business Hub</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{--bg:#f7f4ef;--card:#ffffff;--dark:#1e1a14;--mid:#6b5f4a;--light:#c4b89a;--accent:#d4622a;--green:#3d7a5a;--red:#b84040;--yellow:#c8941a;--border:#e4ddd0;--shadow:0 2px 12px rgba(30,26,20,0.08);--blue:#3a5cc7;}
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -79,7 +81,7 @@
   .week-label{font-family:'Playfair Display',serif;font-size:16px;font-weight:600;}
   .week-btn{background:transparent;border:1px solid var(--border);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:16px;color:var(--dark);}
   .week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:16px;}
-  .day-col{background:var(--card);border-radius:10px;border:1px solid var(--border);padding:8px 4px;min-height:80px;cursor:pointer;transition:all 0.15s;position:relative;}
+  .day-col{background:var(--card);border-radius:10px;border:1px solid var(--border);padding:8px 4px;min-height:80px;cursor:pointer;transition:all 0.15s;}
   .day-col:hover{border-color:var(--dark);}
   .day-col.today{border-color:var(--accent);background:#fff9f6;}
   .day-col.has-sessions{background:#f0f7f4;}
@@ -90,9 +92,9 @@
   .day-dot{width:6px;height:6px;border-radius:50%;background:var(--green);margin:1px auto;}
   .day-session-card{background:var(--card);border-radius:10px;border:1px solid var(--border);padding:12px;margin-bottom:8px;}
   .day-session-card.acuity{border-left:3px solid var(--green);}
-  .day-session-card.manual{border-left:3px solid var(--accent);}
   .session-name{font-weight:600;font-size:14px;}
   .session-meta{font-size:12px;color:var(--mid);margin-top:2px;}
+  .sync-bar{background:#e8f4ee;border-radius:8px;padding:8px 12px;font-size:12px;color:var(--green);margin-bottom:12px;display:none;}
   @media(max-width:380px){.stat-value{font-size:22px;}.day-num{font-size:12px;}}
 </style>
 </head>
@@ -112,8 +114,10 @@
     <button class="nav-tab" onclick="showTab('settings')">Settings</button>
   </div>
 </div>
+
 <div id="page-dashboard" class="page active">
   <div style="margin-bottom:18px;"><h2 style="font-size:24px;">Good <span id="greeting"></span>, Emily 👋</h2><p style="color:var(--mid);font-size:13px;margin-top:4px;">Here's what's on today.</p></div>
+  <div id="sync-bar" class="sync-bar">✓ Synced across all your devices</div>
   <div class="stat-grid">
     <div class="stat-card"><div class="stat-label">This month</div><div class="stat-value" id="dash-revenue">£0</div><div class="stat-sub" id="dash-growth" style="color:var(--mid);">—</div></div>
     <div class="stat-card"><div class="stat-label">Sessions (month)</div><div class="stat-value" id="dash-sessions">0</div><div class="stat-sub" id="dash-sessions-sub" style="color:var(--mid);">—</div></div>
@@ -129,6 +133,7 @@
   <div class="card" id="dash-content-card" style="display:none;"><div class="card-title">📱 Content coming up</div><div id="dash-content-list"></div></div>
   <div class="card" id="dash-packages" style="display:none;"><div class="card-title">📦 Packages finishing soon</div><div id="dash-package-list"></div></div>
 </div>
+
 <div id="page-calendar" class="page">
   <div class="week-nav">
     <button class="week-btn" onclick="changeWeek(-1)">‹</button>
@@ -136,15 +141,15 @@
     <button class="week-btn" onclick="changeWeek(1)">›</button>
   </div>
   <div class="week-grid" id="week-grid"></div>
-  <div id="day-sessions-container">
-    <div class="card-title" id="selected-day-label" style="margin-bottom:8px;"></div>
-    <div id="day-sessions-list"></div>
-  </div>
+  <div class="card-title" id="selected-day-label" style="margin-bottom:8px;"></div>
+  <div id="day-sessions-list"></div>
 </div>
+
 <div id="page-clients" class="page">
   <div class="section-header"><h2 class="section-title">Clients</h2><button class="btn" onclick="openModal('client')">+ Add</button></div>
   <div id="client-list"></div>
 </div>
+
 <div id="page-finance" class="page">
   <div class="section-header"><h2 class="section-title">Finance</h2></div>
   <div class="stat-grid" style="margin-bottom:14px;">
@@ -155,6 +160,7 @@
   <div class="section-header" style="margin-top:18px;"><div style="font-size:15px;font-weight:600;">Costs</div><button class="btn-sm" onclick="openModal('cost')">+ Add cost</button></div>
   <div id="cost-list"></div>
 </div>
+
 <div id="page-content" class="page">
   <div class="section-header"><h2 class="section-title">Content</h2><button class="btn" onclick="openModal('content')">+ Add</button></div>
   <div style="display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px;">
@@ -167,10 +173,12 @@
   <div id="content-list"></div>
   <div style="margin-top:20px;"><div class="section-header"><div style="font-size:15px;font-weight:600;">💡 Ideas Bank</div><button class="btn-sm" onclick="openModal('idea')">+ Idea</button></div><div id="idea-list"></div></div>
 </div>
+
 <div id="page-todos" class="page">
   <div class="section-header"><h2 class="section-title">To-Do</h2><button class="btn" onclick="openModal('todo')">+ Add</button></div>
   <div id="todo-list"></div>
 </div>
+
 <div id="page-settings" class="page">
   <h2 class="section-title" style="margin-bottom:18px;">Settings</h2>
   <div class="card">
@@ -179,211 +187,408 @@
     <div class="form-group"><label>Write-up deadline (days after session)</label><input type="number" id="set-writeup" placeholder="e.g. 2" oninput="saveSetting('writeUpDays',this.value)"></div>
   </div>
   <div class="card" style="margin-top:4px;">
-    <div class="card-title">Acuity sync</div>
-    <p style="font-size:12px;color:var(--mid);margin-bottom:12px;">Your Acuity calendar syncs automatically when you open the hub.</p>
-    <button class="btn-sm" onclick="syncAcuity(true)">↻ Sync now</button>
-    <div id="sync-status" style="font-size:11px;color:var(--mid);margin-top:8px;"></div>
+    <div class="card-title">Sync status</div>
+    <div id="sync-status" style="font-size:12px;color:var(--mid);margin-bottom:10px;">Checking...</div>
+    <button class="btn-sm" onclick="syncAcuity()">↻ Sync Acuity now</button>
   </div>
   <div class="card" style="margin-top:4px;">
     <div class="card-title">Data</div>
-    <p style="font-size:12px;color:var(--mid);margin-bottom:12px;">Your data is saved in your browser.</p>
-    <div style="display:flex;gap:8px;"><button class="btn-sm" onclick="exportData()">Export backup</button><button class="btn-sm btn-danger" onclick="clearData()">Clear all data</button></div>
+    <p style="font-size:12px;color:var(--mid);margin-bottom:12px;">Your data syncs across all devices automatically.</p>
+    <button class="btn-sm btn-danger" onclick="clearData()">Clear all data</button>
   </div>
 </div>
+
 <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)"><div class="modal" id="modal-body"></div></div>
+
 <script>
-const STORE='petshil_v4';
-let D=load();
-function load(){try{const r=localStorage.getItem(STORE);const base={clients:[],sessions:[],costs:[],content:[],ideas:[],todos:[],acuitySessions:[],settings:{targetIncome:1500,followUpDays:28,writeUpDays:2}};return r?Object.assign(base,JSON.parse(r)):base;}catch{return{clients:[],sessions:[],costs:[],content:[],ideas:[],todos:[],acuitySessions:[],settings:{targetIncome:1500,followUpDays:28,writeUpDays:2}};}}
-function save(){try{localStorage.setItem(STORE,JSON.stringify(D));}catch{}}
-function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
-function showTab(tab){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));document.getElementById('page-'+tab).classList.add('active');const tabs=['dashboard','calendar','clients','finance','content','todos','settings'];document.querySelectorAll('.nav-tab')[tabs.indexOf(tab)].classList.add('active');render();}
-function today(){return new Date().toISOString().split('T')[0];}
-function fmtDate(d){if(!d)return'—';const x=new Date(d+'T12:00:00');return x.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
-function fmtDateShort(d){if(!d)return'—';const x=new Date(d+'T12:00:00');return x.toLocaleDateString('en-GB',{day:'numeric',month:'short'});}
-function monthKey(d){return d?d.slice(0,7):'';}
-function daysAgo(d){if(!d)return 999;return Math.floor((Date.now()-new Date(d+'T12:00:00').getTime())/86400000);}
-function daysUntil(d){if(!d)return 999;return Math.floor((new Date(d+'T12:00:00').getTime()-Date.now())/86400000);}
-function addDays(d,n){const x=new Date(d+'T12:00:00');x.setDate(x.getDate()+n);return x.toISOString().split('T')[0];}
-function writeUpDeadline(sd){const dt=new Date(sd+'T12:00:00');const day=dt.getDay();if(day===5)return addDays(sd,3);if(day===6)return addDays(sd,2);return addDays(sd,D.settings.writeUpDays||2);}
-function nowMonth(){const n=new Date();return`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}`;}
-function prevMonth(m){const[y,mo]=m.split('-').map(Number);return mo===1?`${y-1}-12`:`${y}-${String(mo-1).padStart(2,'0')}`;}
-function monthLabel(m){if(!m)return'';const[y,mo]=m.split('-').map(Number);return new Date(y,mo-1,1).toLocaleDateString('en-GB',{month:'short'});}
-function fc(n){return'£'+Number(n||0).toFixed(2);}
-function appleCalLink(title,dateStr,notes){const d=dateStr.replace(/-/g,'');const enc=encodeURIComponent;const ics=['BEGIN:VCALENDAR','VERSION:2.0','BEGIN:VEVENT',`DTSTART;VALUE=DATE:${d}`,`DTEND;VALUE=DATE:${d}`,`SUMMARY:${title}`,`DESCRIPTION:${(notes||'').replace(/\n/g,'\\n')}`,'END:VEVENT','END:VCALENDAR'].join('\r\n');return'data:text/calendar;charset=utf8,'+enc(ics);}
-function CalBtn(title,dateStr,notes){return`<a href="${appleCalLink(title,dateStr,notes||'')}" download="${title.replace(/\s/g,'_')}.ics" class="btn-sm btn-cal" style="text-decoration:none;display:inline-block;">📅 Add to Calendar</a>`;}
-function saveSetting(k,v){D.settings[k]=isNaN(v)?v:Number(v);save();}
-function loadSettings(){document.getElementById('set-target').value=D.settings.targetIncome||'';document.getElementById('set-followup').value=D.settings.followUpDays||28;document.getElementById('set-writeup').value=D.settings.writeUpDays||2;}
-function extractClientName(title){if(!title)return'Unknown';const dashIdx=title.lastIndexOf(' - ');if(dashIdx>0)return title.slice(dashIdx+3).trim();return title.trim();}
+// ===================== SUPABASE =====================
+const SUPABASE_URL = 'https://yvpeskeeunjkimgopsrb.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl2cGVza2VldW5qa2ltZ29wc3JiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2ODI3MDksImV4cCI6MjA5MTI1ODcwOX0.qCHEQpJGhSTeWKuw3qEX_5_4qyZm-Png13FakXmkYPc';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const ACUITY_URL="https://app.acuityscheduling.com/export.php?owner=36877837&token=ZkpEL3ZnRlVxVE04amdOUjA5M0hvQW5RdlhJZlQyTE1xOHY0VEw2cC9yZzhOdy9wcStRZ0RxbTRpTkpZeE1TRUoyWW1tNUZMcC9pUHFMUUtvMjZMdk5PblJMd1dGaHNTUDZqN244ZDc0SWZWTTlWMklsRnZGekhpYUFkQw%3D%3D";
-const CORS_PROXY="https://corsproxy.io/?";
+// ===================== DATA =====================
+let D = {
+  clients: [], sessions: [], costs: [], content: [], ideas: [], todos: [],
+  settings: { targetIncome: 1500, followUpDays: 28, writeUpDays: 2 }
+};
 
-async function syncAcuity(manual){
-  const statusEl=document.getElementById('sync-status');
-  if(statusEl)statusEl.textContent='Syncing...';
-  try{
-    const res=await fetch(CORS_PROXY+encodeURIComponent(ACUITY_URL));
-    const text=await res.text();
-    const events=parseICS(text);
-    let newCount=0;
-    events.forEach(ev=>{
-      const exists=D.sessions.some(s=>s.acuityId===ev.uid||(s.acuityTitle===ev.title&&s.date===ev.date));
-      if(!exists){
-        D.sessions.push({id:uid(),acuityId:ev.uid||null,acuityTitle:ev.title,clientName:extractClientName(ev.title),date:ev.date,time:ev.time||null,type:'1:1 Session',amount:null,notes:'',writeUpDone:false,followUpDone:false,source:'acuity'});
+async function loadFromCloud() {
+  try {
+    const keys = ['clients','sessions','costs','content','ideas','todos','settings'];
+    for (const key of keys) {
+      const { data } = await sb.from('hub_data').select('data').eq('key', key).single();
+      if (data) D[key] = data.data;
+    }
+    showSyncBar();
+    render();
+  } catch(e) {
+    console.log('Cloud load failed, using local', e);
+    loadLocal();
+    render();
+  }
+}
+
+function loadLocal() {
+  try {
+    const r = localStorage.getItem('petshil_v5');
+    if (r) D = { ...D, ...JSON.parse(r) };
+  } catch(e) {}
+}
+
+async function saveToCloud(key) {
+  try {
+    await sb.from('hub_data').upsert({ key, data: D[key], updated_at: new Date().toISOString() });
+    localStorage.setItem('petshil_v5', JSON.stringify(D));
+  } catch(e) {
+    localStorage.setItem('petshil_v5', JSON.stringify(D));
+  }
+}
+
+async function save(key) {
+  localStorage.setItem('petshil_v5', JSON.stringify(D));
+  if (key) await saveToCloud(key);
+  else {
+    const keys = ['clients','sessions','costs','content','ideas','todos','settings'];
+    for (const k of keys) await saveToCloud(k);
+  }
+}
+
+function showSyncBar() {
+  const bar = document.getElementById('sync-bar');
+  if (bar) { bar.style.display = 'block'; setTimeout(() => bar.style.display = 'none', 3000); }
+  const status = document.getElementById('sync-status');
+  if (status) status.textContent = 'Synced — ' + new Date().toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit'});
+}
+
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+// ===================== TABS =====================
+function showTab(tab) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + tab).classList.add('active');
+  const tabs = ['dashboard','calendar','clients','finance','content','todos','settings'];
+  document.querySelectorAll('.nav-tab')[tabs.indexOf(tab)].classList.add('active');
+  render();
+}
+
+// ===================== DATES =====================
+function today() { return new Date().toISOString().split('T')[0]; }
+function fmtDate(d) { if (!d) return '—'; return new Date(d+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}); }
+function fmtDateShort(d) { if (!d) return '—'; return new Date(d+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'}); }
+function monthKey(d) { return d ? d.slice(0,7) : ''; }
+function daysAgo(d) { if (!d) return 999; return Math.floor((Date.now() - new Date(d+'T12:00:00').getTime()) / 86400000); }
+function daysUntil(d) { if (!d) return 999; return Math.floor((new Date(d+'T12:00:00').getTime() - Date.now()) / 86400000); }
+function addDays(d, n) { const x = new Date(d+'T12:00:00'); x.setDate(x.getDate()+n); return x.toISOString().split('T')[0]; }
+function writeUpDeadline(sd) {
+  const day = new Date(sd+'T12:00:00').getDay();
+  if (day === 5) return addDays(sd, 3);
+  if (day === 6) return addDays(sd, 2);
+  return addDays(sd, D.settings.writeUpDays || 2);
+}
+function nowMonth() { const n = new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}`; }
+function prevMonth(m) { const [y,mo] = m.split('-').map(Number); return mo===1 ? `${y-1}-12` : `${y}-${String(mo-1).padStart(2,'0')}`; }
+function monthLabel(m) { if (!m) return ''; const [y,mo] = m.split('-').map(Number); return new Date(y,mo-1,1).toLocaleDateString('en-GB',{month:'short'}); }
+function fc(n) { return '£' + Number(n||0).toFixed(2); }
+function appleCalLink(title, dateStr, notes) {
+  const d = dateStr.replace(/-/g,''); const enc = encodeURIComponent;
+  const ics = ['BEGIN:VCALENDAR','VERSION:2.0','BEGIN:VEVENT',`DTSTART;VALUE=DATE:${d}`,`DTEND;VALUE=DATE:${d}`,`SUMMARY:${title}`,`DESCRIPTION:${(notes||'').replace(/\n/g,'\\n')}`,'END:VEVENT','END:VCALENDAR'].join('\r\n');
+  return 'data:text/calendar;charset=utf8,' + enc(ics);
+}
+function CalBtn(title, dateStr, notes) { return `<a href="${appleCalLink(title,dateStr,notes||'')}" download="${title.replace(/\s/g,'_')}.ics" class="btn-sm btn-cal" style="text-decoration:none;display:inline-block;">📅 Add to Calendar</a>`; }
+function extractClientName(title) { if (!title) return 'Unknown'; const i = title.lastIndexOf(' - '); return i > 0 ? title.slice(i+3).trim() : title.trim(); }
+
+// ===================== SETTINGS =====================
+function saveSetting(k, v) { D.settings[k] = isNaN(v) ? v : Number(v); save('settings'); }
+function loadSettings() {
+  document.getElementById('set-target').value = D.settings.targetIncome || '';
+  document.getElementById('set-followup').value = D.settings.followUpDays || 28;
+  document.getElementById('set-writeup').value = D.settings.writeUpDays || 2;
+}
+
+// ===================== ACUITY SYNC =====================
+const ACUITY_URL = "https://app.acuityscheduling.com/export.php?owner=36877837&token=ZkpEL3ZnRlVxVE04amdOUjA5M0hvQW5RdlhJZlQyTE1xOHY0VEw2cC9yZzhOdy9wcStRZ0RxbTRpTkpZeE1TRUoyWW1tNUZMcC9pUHFMUUtvMjZMdk5PblJMd1dGaHNTUDZqN244ZDc0SWZWTTlWMklsRnZGekhpYUFkQw%3D%3D";
+const CORS_PROXY = "https://corsproxy.io/?";
+
+async function syncAcuity() {
+  const statusEl = document.getElementById('sync-status');
+  if (statusEl) statusEl.textContent = 'Syncing Acuity...';
+  try {
+    const res = await fetch(CORS_PROXY + encodeURIComponent(ACUITY_URL));
+    const text = await res.text();
+    const events = parseICS(text);
+    let newCount = 0;
+    events.forEach(ev => {
+      const exists = D.sessions.some(s => s.acuityId === ev.uid || (s.acuityTitle === ev.title && s.date === ev.date));
+      if (!exists) {
+        D.sessions.push({ id: uid(), acuityId: ev.uid||null, acuityTitle: ev.title, clientName: extractClientName(ev.title), date: ev.date, time: ev.time||null, type: '1:1 Session', amount: null, notes: '', writeUpDone: false, followUpDone: false, source: 'acuity' });
         newCount++;
       }
     });
-    D.acuitySessions=events;
-    save();
-    if(statusEl)statusEl.textContent=`Last synced: ${new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}${newCount>0?' · '+newCount+' new session'+(newCount>1?'s':'')+' added':''}`;
+    await save('sessions');
+    if (statusEl) statusEl.textContent = `Acuity synced — ${new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}${newCount > 0 ? ' · '+newCount+' new session'+(newCount>1?'s':'')+' added' : ''}`;
     render();
-  }catch(err){
-    if(statusEl)statusEl.textContent='Sync failed — check your connection';
+  } catch(err) {
+    if (statusEl) statusEl.textContent = 'Acuity sync failed — tap to retry';
   }
 }
 
-function parseICS(icsText){
-  const events=[];const lines=icsText.split(/\r\n|\n|\r/);let ev=null;
-  for(let i=0;i<lines.length;i++){
-    let line=lines[i];
-    while(i+1<lines.length&&(lines[i+1].startsWith(' ')||lines[i+1].startsWith('\t'))){i++;line+=lines[i].slice(1);}
-    if(line==='BEGIN:VEVENT'){ev={};}
-    else if(line==='END:VEVENT'){if(ev&&ev.date)events.push(ev);ev=null;}
-    else if(ev){
-      if(line.startsWith('SUMMARY:'))ev.title=line.slice(8).replace(/\\,/g,',').replace(/\\n/g,' ').trim();
-      else if(line.startsWith('UID:'))ev.uid=line.slice(4).trim();
-      else if(line.match(/^DTSTART(;[^:]*)?:/)){const val=line.split(':').slice(1).join(':');if(val.length>=8){const d=val.slice(0,8);ev.date=d.slice(0,4)+'-'+d.slice(4,6)+'-'+d.slice(6,8);if(val.length>8){const h=parseInt(val.slice(9,11));const m=val.slice(11,13);ev.time=(h>12?h-12:h===0?12:h)+':'+m+(h>=12?'pm':'am');}}}
+function parseICS(icsText) {
+  const events = []; const lines = icsText.split(/\r\n|\n|\r/); let ev = null;
+  for (let i = 0; i < lines.length; i++) {
+    let line = lines[i];
+    while (i+1 < lines.length && (lines[i+1].startsWith(' ') || lines[i+1].startsWith('\t'))) { i++; line += lines[i].slice(1); }
+    if (line === 'BEGIN:VEVENT') { ev = {}; }
+    else if (line === 'END:VEVENT') { if (ev && ev.date) events.push(ev); ev = null; }
+    else if (ev) {
+      if (line.startsWith('SUMMARY:')) ev.title = line.slice(8).replace(/\\,/g,',').replace(/\\n/g,' ').trim();
+      else if (line.startsWith('UID:')) ev.uid = line.slice(4).trim();
+      else if (line.match(/^DTSTART(;[^:]*)?:/)) {
+        const val = line.split(':').slice(1).join(':');
+        if (val.length >= 8) {
+          const d = val.slice(0,8); ev.date = d.slice(0,4)+'-'+d.slice(4,6)+'-'+d.slice(6,8);
+          if (val.length > 8) { const h = parseInt(val.slice(9,11)); const m = val.slice(11,13); ev.time = (h>12?h-12:h===0?12:h)+':'+m+(h>=12?'pm':'am'); }
+        }
+      }
     }
   }
-  return events.sort((a,b)=>a.date.localeCompare(b.date));
+  return events.sort((a,b) => a.date.localeCompare(b.date));
 }
 
-let currentWeekStart=null;
-function getWeekStart(date){const d=new Date(date+'T12:00:00');const day=d.getDay();const diff=day===0?-6:1-day;d.setDate(d.getDate()+diff);return d.toISOString().split('T')[0];}
-function changeWeek(dir){const d=new Date(currentWeekStart+'T12:00:00');d.setDate(d.getDate()+(dir*7));currentWeekStart=d.toISOString().split('T')[0];renderCalendar();}
-let selectedDay=today();
+// ===================== CALENDAR =====================
+let currentWeekStart = null;
+let selectedDay = today();
 
-function renderCalendar(){
-  if(!currentWeekStart)currentWeekStart=getWeekStart(today());
-  const weekDays=[];for(let i=0;i<7;i++){const d=new Date(currentWeekStart+'T12:00:00');d.setDate(d.getDate()+i);weekDays.push(d.toISOString().split('T')[0]);}
-  const start=new Date(weekDays[0]+'T12:00:00');const end=new Date(weekDays[6]+'T12:00:00');
-  document.getElementById('week-label').textContent=start.toLocaleDateString('en-GB',{day:'numeric',month:'short'})+' – '+end.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
-  const dayNames=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-  document.getElementById('week-grid').innerHTML=weekDays.map((dateStr,i)=>{
-    const sessionsOnDay=D.sessions.filter(s=>s.date===dateStr);
-    const isToday=dateStr===today();const isSelected=dateStr===selectedDay;
-    const dots=sessionsOnDay.slice(0,3).map(()=>'<div class="day-dot"></div>').join('');
-    return`<div class="day-col${isToday?' today':''}${sessionsOnDay.length?' has-sessions':''}${isSelected?' selected':''}" onclick="selectDay('${dateStr}')"><div class="day-name">${dayNames[i]}</div><div class="day-num">${new Date(dateStr+'T12:00:00').getDate()}</div>${dots}</div>`;
+function getWeekStart(date) {
+  const d = new Date(date+'T12:00:00'); const day = d.getDay();
+  d.setDate(d.getDate() + (day === 0 ? -6 : 1 - day));
+  return d.toISOString().split('T')[0];
+}
+function changeWeek(dir) {
+  const d = new Date(currentWeekStart+'T12:00:00'); d.setDate(d.getDate() + dir*7);
+  currentWeekStart = d.toISOString().split('T')[0]; renderCalendar();
+}
+function selectDay(dateStr) { selectedDay = dateStr; renderCalendar(); }
+
+function renderCalendar() {
+  if (!currentWeekStart) currentWeekStart = getWeekStart(today());
+  const weekDays = [];
+  for (let i = 0; i < 7; i++) { const d = new Date(currentWeekStart+'T12:00:00'); d.setDate(d.getDate()+i); weekDays.push(d.toISOString().split('T')[0]); }
+  const start = new Date(weekDays[0]+'T12:00:00'); const end = new Date(weekDays[6]+'T12:00:00');
+  document.getElementById('week-label').textContent = start.toLocaleDateString('en-GB',{day:'numeric',month:'short'}) + ' – ' + end.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+  const dayNames = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  document.getElementById('week-grid').innerHTML = weekDays.map((dateStr,i) => {
+    const s = D.sessions.filter(s => s.date === dateStr);
+    const dots = s.slice(0,3).map(() => '<div class="day-dot"></div>').join('');
+    return `<div class="day-col${dateStr===today()?' today':''}${s.length?' has-sessions':''}${dateStr===selectedDay?' selected':''}" onclick="selectDay('${dateStr}')"><div class="day-name">${dayNames[i]}</div><div class="day-num">${new Date(dateStr+'T12:00:00').getDate()}</div>${dots}</div>`;
   }).join('');
   renderDayView(selectedDay);
 }
 
-function selectDay(dateStr){selectedDay=dateStr;renderCalendar();}
-
-function renderDayView(dateStr){
-  const label=document.getElementById('selected-day-label');
-  const container=document.getElementById('day-sessions-list');
-  const d=new Date(dateStr+'T12:00:00');
-  label.textContent=(dateStr===today()?'Today — ':'')+d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
-  const sessionsOnDay=D.sessions.filter(s=>s.date===dateStr).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
-  if(!sessionsOnDay.length){container.innerHTML='<div class="empty" style="padding:20px 0;">No sessions this day.</div>';return;}
-  container.innerHTML=sessionsOnDay.map(s=>{
-    const clientName=s.clientName||extractClientName(s.acuityTitle||'');
-    const amountSet=s.amount!==null&&s.amount!==undefined&&s.amount!=='';
-    return`<div class="day-session-card ${s.source==='acuity'?'acuity':'manual'}">
+function renderDayView(dateStr) {
+  const label = document.getElementById('selected-day-label');
+  const container = document.getElementById('day-sessions-list');
+  label.textContent = (dateStr===today()?'Today — ':'') + new Date(dateStr+'T12:00:00').toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
+  const sessions = D.sessions.filter(s => s.date === dateStr).sort((a,b) => (a.time||'').localeCompare(b.time||''));
+  if (!sessions.length) { container.innerHTML = '<div class="empty" style="padding:20px 0;">No sessions this day.</div>'; return; }
+  container.innerHTML = sessions.map(s => {
+    const name = s.clientName || extractClientName(s.acuityTitle||'');
+    const amt = s.amount !== null && s.amount !== undefined && s.amount !== '';
+    return `<div class="day-session-card acuity">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-        <div><div class="session-name">${clientName}</div><div class="session-meta">${s.time||''} · ${s.type||'1:1 Session'}${s.source==='acuity'?' · Acuity':''}</div>
+        <div><div class="session-name">${name}</div><div class="session-meta">${s.time||''} · ${s.type||'1:1 Session'}</div>
         ${!s.writeUpDone?`<div style="font-size:11px;color:var(--mid);margin-top:3px;">Write-up due ${fmtDateShort(writeUpDeadline(s.date))}</div>`:'<div style="font-size:11px;color:var(--green);margin-top:3px;">✓ Write-up done</div>'}
         </div>
-        <div style="text-align:right;">${amountSet?`<div style="font-family:'Playfair Display',serif;font-size:16px;font-weight:700;">${fc(s.amount)}</div>`:`<button class="btn-sm btn-accent" onclick="openModal('addAmount','${s.id}')" style="font-size:11px;white-space:nowrap;">+ Add £</button>`}</div>
+        <div>${amt?`<div style="font-family:'Playfair Display',serif;font-size:16px;font-weight:700;">${fc(s.amount)}</div>`:`<button class="btn-sm btn-accent" onclick="openModal('addAmount','${s.id}')" style="font-size:11px;">+ Add £</button>`}</div>
       </div>
       <div class="btn-row">
         ${!s.writeUpDone?`<button class="btn-sm btn-green" onclick="markWriteUpDone('${s.id}')">✓ Write-up done</button>`:''}
-        ${CalBtn('Write-up: '+clientName,writeUpDeadline(s.date),'Session notes write-up due')}
+        ${CalBtn('Write-up: '+name, writeUpDeadline(s.date), 'Session notes write-up due')}
         <button class="btn-sm btn-danger" onclick="deleteItem('sessions','${s.id}')">Delete</button>
       </div>
     </div>`;
   }).join('');
 }
 
-function render(){renderDashboard();renderCalendar();renderClients();renderFinance();renderContent();renderTodos();loadSettings();}
+// ===================== RENDER =====================
+function render() { renderDashboard(); renderCalendar(); renderClients(); renderFinance(); renderContent(); renderTodos(); loadSettings(); }
 
-function renderDashboard(){
-  const h=new Date().getHours();
-  document.getElementById('greeting').textContent=h<12?'morning':h<17?'afternoon':'evening';
-  document.getElementById('todayDate').textContent=new Date().toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
-  const cm=nowMonth();const pm=prevMonth(cm);
-  const sThis=D.sessions.filter(s=>monthKey(s.date)===cm&&s.amount);
-  const sPrev=D.sessions.filter(s=>monthKey(s.date)===pm&&s.amount);
-  const revThis=sThis.reduce((a,s)=>a+Number(s.amount||0),0);
-  const revPrev=sPrev.reduce((a,s)=>a+Number(s.amount||0),0);
-  const allThis=D.sessions.filter(s=>monthKey(s.date)===cm);
-  document.getElementById('dash-revenue').textContent=fc(revThis);
-  document.getElementById('dash-sessions').textContent=allThis.length;
-  document.getElementById('dash-sessions-sub').textContent=`${D.sessions.filter(s=>monthKey(s.date)===pm).length} last month`;
-  if(revPrev>0){const g=((revThis-revPrev)/revPrev*100).toFixed(1);const el=document.getElementById('dash-growth');el.textContent=`${g>0?'+':''}${g}% vs last month`;el.style.color=g>0?'var(--green)':g<0?'var(--red)':'var(--mid)';}else{document.getElementById('dash-growth').textContent='First month tracked';}
-  const target=D.settings.targetIncome||0;
-  if(target>0){const pct=Math.min(100,(revThis/target)*100);document.getElementById('dash-target-label').textContent=`${fc(revThis)} of ${fc(target)}`;document.getElementById('dash-target-pct').textContent=`${pct.toFixed(0)}%`;document.getElementById('dash-target-bar').style.width=pct+'%';document.getElementById('dash-target-sub').textContent=revThis>=target?'🎉 Target hit!':`${fc(target-revThis)} to go`;}
-  const todaySessions=D.sessions.filter(s=>s.date===today()).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
-  if(todaySessions.length){document.getElementById('dash-today-sessions').style.display='block';document.getElementById('dash-today-list').innerHTML=todaySessions.map(s=>{const name=s.clientName||extractClientName(s.acuityTitle||'');const amountSet=s.amount!==null&&s.amount!==undefined&&s.amount!=='';return`<div class="todo-item"><div style="flex:1"><span style="font-weight:600">${name}</span><div style="font-size:11px;color:var(--mid);">${s.time?s.time+' · ':''}${s.type||'1:1 Session'}</div></div>${!amountSet?`<button class="btn-sm btn-accent" onclick="openModal('addAmount','${s.id}')" style="font-size:11px;">+ Add £</button>`:`<span style="font-weight:700;font-family:'Playfair Display',serif;">${fc(s.amount)}</span>`}</div>`;}).join('');}else{document.getElementById('dash-today-sessions').style.display='none';}
-  const wups=D.sessions.filter(s=>{if(s.writeUpDone)return false;const deadline=writeUpDeadline(s.date);return daysUntil(deadline)<=3&&daysAgo(s.date)>=0;});
-  if(wups.length){document.getElementById('dash-writeups').style.display='block';document.getElementById('dash-writeup-list').innerHTML=wups.map(s=>{const name=s.clientName||extractClientName(s.acuityTitle||'');const deadline=writeUpDeadline(s.date);const due=daysUntil(deadline);return`<div class="todo-item"><div style="flex:1"><span style="font-weight:600">Write-up: ${name}</span><div style="font-size:11px;color:${due<0?'var(--red)':'var(--mid)'};">Due ${fmtDate(deadline)}${due<0?' — overdue':due===0?' — today':''}</div></div><div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;">${CalBtn('Write-up: '+name,deadline,'Session notes write-up due')}<button class="btn-sm btn-green" onclick="markWriteUpDone('${s.id}')" style="font-size:11px;">✓ Done</button></div></div>`;}).join('');}else{document.getElementById('dash-writeups').style.display='none';}
-  const fup=D.sessions.filter(s=>!s.followUpDone&&daysAgo(s.date)>=(D.settings.followUpDays||28));
-  const seen=new Set();const fupUniq=fup.filter(s=>{const n=s.clientName||extractClientName(s.acuityTitle||'');if(seen.has(n))return false;seen.add(n);return true;});
-  if(fupUniq.length){document.getElementById('dash-followups').style.display='block';document.getElementById('dash-followup-list').innerHTML=fupUniq.map(s=>{const name=s.clientName||extractClientName(s.acuityTitle||'');return`<div class="todo-item"><div style="flex:1"><span style="font-weight:600">${name}</span><div style="font-size:11px;color:var(--mid);">${daysAgo(s.date)} days since last session</div></div><button class="btn-sm btn-green" onclick="markFollowUpDone('${s.id}')" style="font-size:11px;">✓ Done</button></div>`;}).join('');}else{document.getElementById('dash-followups').style.display='none';}
-  const cdSoon=D.content.filter(c=>c.status!=='posted'&&c.scheduledDate&&daysUntil(c.scheduledDate)<=3);
-  if(cdSoon.length){document.getElementById('dash-content-card').style.display='block';document.getElementById('dash-content-list').innerHTML=cdSoon.map(c=>{const due=daysUntil(c.scheduledDate);return`<div class="todo-item"><div style="flex:1"><span style="font-weight:600">${c.title}</span><div style="font-size:11px;color:var(--mid);">${c.format} · ${due<0?'overdue':due===0?'today':due+' days'}</div></div></div>`;}).join('');}else{document.getElementById('dash-content-card').style.display='none';}
-  const packAlerts=D.clients.filter(c=>{if(!c.packageSize)return false;const used=D.sessions.filter(s=>(s.clientId===c.id||s.clientName===c.name)&&s.type==='Package Session').length;return used>=c.packageSize-1;});
-  if(packAlerts.length){document.getElementById('dash-packages').style.display='block';document.getElementById('dash-package-list').innerHTML=packAlerts.map(c=>{const used=D.sessions.filter(s=>(s.clientId===c.id||s.clientName===c.name)&&s.type==='Package Session').length;return`<div class="todo-item"><div><span style="font-weight:600">${c.name}</span>${c.dogName?` (${c.dogName})`:''}<div style="font-size:11px;color:var(--mid);">${used}/${c.packageSize} sessions${used>=c.packageSize?' — complete, time to rebook!':' — last session coming up'}</div></div></div>`;}).join('');}else{document.getElementById('dash-packages').style.display='none';}
+function renderDashboard() {
+  const h = new Date().getHours();
+  document.getElementById('greeting').textContent = h<12?'morning':h<17?'afternoon':'evening';
+  document.getElementById('todayDate').textContent = new Date().toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+  const cm = nowMonth(); const pm = prevMonth(cm);
+  const revThis = D.sessions.filter(s=>monthKey(s.date)===cm&&s.amount).reduce((a,s)=>a+Number(s.amount||0),0);
+  const revPrev = D.sessions.filter(s=>monthKey(s.date)===pm&&s.amount).reduce((a,s)=>a+Number(s.amount||0),0);
+  document.getElementById('dash-revenue').textContent = fc(revThis);
+  document.getElementById('dash-sessions').textContent = D.sessions.filter(s=>monthKey(s.date)===cm).length;
+  document.getElementById('dash-sessions-sub').textContent = `${D.sessions.filter(s=>monthKey(s.date)===pm).length} last month`;
+  if (revPrev > 0) { const g = ((revThis-revPrev)/revPrev*100).toFixed(1); const el = document.getElementById('dash-growth'); el.textContent = `${g>0?'+':''}${g}% vs last month`; el.style.color = g>0?'var(--green)':g<0?'var(--red)':'var(--mid)'; }
+  else { document.getElementById('dash-growth').textContent = 'First month tracked'; }
+  const target = D.settings.targetIncome || 0;
+  if (target > 0) { const pct = Math.min(100,(revThis/target)*100); document.getElementById('dash-target-label').textContent = `${fc(revThis)} of ${fc(target)}`; document.getElementById('dash-target-pct').textContent = `${pct.toFixed(0)}%`; document.getElementById('dash-target-bar').style.width = pct+'%'; document.getElementById('dash-target-sub').textContent = revThis>=target?'🎉 Target hit!':`${fc(target-revThis)} to go`; }
+
+  const todaySessions = D.sessions.filter(s=>s.date===today()).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
+  if (todaySessions.length) { document.getElementById('dash-today-sessions').style.display='block'; document.getElementById('dash-today-list').innerHTML = todaySessions.map(s=>{ const name=s.clientName||extractClientName(s.acuityTitle||''); const amt=s.amount!==null&&s.amount!==undefined&&s.amount!==''; return `<div class="todo-item"><div style="flex:1"><span style="font-weight:600">${name}</span><div style="font-size:11px;color:var(--mid);">${s.time?s.time+' · ':''}${s.type||'1:1 Session'}</div></div>${!amt?`<button class="btn-sm btn-accent" onclick="openModal('addAmount','${s.id}')" style="font-size:11px;">+ Add £</button>`:`<span style="font-weight:700;font-family:'Playfair Display',serif;">${fc(s.amount)}</span>`}</div>`; }).join(''); }
+  else { document.getElementById('dash-today-sessions').style.display='none'; }
+
+  const wups = D.sessions.filter(s=>{ if(s.writeUpDone)return false; return daysUntil(writeUpDeadline(s.date))<=3&&daysAgo(s.date)>=0; });
+  if (wups.length) { document.getElementById('dash-writeups').style.display='block'; document.getElementById('dash-writeup-list').innerHTML = wups.map(s=>{ const name=s.clientName||extractClientName(s.acuityTitle||''); const deadline=writeUpDeadline(s.date); const due=daysUntil(deadline); return `<div class="todo-item"><div style="flex:1"><span style="font-weight:600">Write-up: ${name}</span><div style="font-size:11px;color:${due<0?'var(--red)':'var(--mid)'};">Due ${fmtDate(deadline)}${due<0?' — overdue':due===0?' — today':''}</div></div><div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;">${CalBtn('Write-up: '+name,deadline,'')}<button class="btn-sm btn-green" onclick="markWriteUpDone('${s.id}')" style="font-size:11px;">✓ Done</button></div></div>`; }).join(''); }
+  else { document.getElementById('dash-writeups').style.display='none'; }
+
+  const seen = new Set();
+  const fup = D.sessions.filter(s=>{ if(s.followUpDone)return false; const n=s.clientName||extractClientName(s.acuityTitle||''); if(seen.has(n))return false; seen.add(n); return daysAgo(s.date)>=(D.settings.followUpDays||28); });
+  if (fup.length) { document.getElementById('dash-followups').style.display='block'; document.getElementById('dash-followup-list').innerHTML = fup.map(s=>{ const name=s.clientName||extractClientName(s.acuityTitle||''); return `<div class="todo-item"><div style="flex:1"><span style="font-weight:600">${name}</span><div style="font-size:11px;color:var(--mid);">${daysAgo(s.date)} days since last session</div></div><button class="btn-sm btn-green" onclick="markFollowUpDone('${s.id}')" style="font-size:11px;">✓ Done</button></div>`; }).join(''); }
+  else { document.getElementById('dash-followups').style.display='none'; }
+
+  const cdSoon = D.content.filter(c=>c.status!=='posted'&&c.scheduledDate&&daysUntil(c.scheduledDate)<=3);
+  if (cdSoon.length) { document.getElementById('dash-content-card').style.display='block'; document.getElementById('dash-content-list').innerHTML = cdSoon.map(c=>{ const due=daysUntil(c.scheduledDate); return `<div class="todo-item"><div style="flex:1"><span style="font-weight:600">${c.title}</span><div style="font-size:11px;color:var(--mid);">${c.format} · ${due<0?'overdue':due===0?'today':due+' days'}</div></div></div>`; }).join(''); }
+  else { document.getElementById('dash-content-card').style.display='none'; }
+
+  const packAlerts = D.clients.filter(c=>{ if(!c.packageSize)return false; const used=D.sessions.filter(s=>(s.clientId===c.id||s.clientName===c.name)&&s.type==='Package Session').length; return used>=c.packageSize-1; });
+  if (packAlerts.length) { document.getElementById('dash-packages').style.display='block'; document.getElementById('dash-package-list').innerHTML = packAlerts.map(c=>{ const used=D.sessions.filter(s=>(s.clientId===c.id||s.clientName===c.name)&&s.type==='Package Session').length; return `<div class="todo-item"><div><span style="font-weight:600">${c.name}</span>${c.dogName?` (${c.dogName})`:''}<div style="font-size:11px;color:var(--mid);">${used}/${c.packageSize} sessions${used>=c.packageSize?' — complete, time to rebook!':' — last session coming up'}</div></div></div>`; }).join(''); }
+  else { document.getElementById('dash-packages').style.display='none'; }
 }
 
-function markWriteUpDone(id){const s=D.sessions.find(x=>x.id===id);if(s){s.writeUpDone=true;save();render();}}
-function markFollowUpDone(id){const s=D.sessions.find(x=>x.id===id);if(s){s.followUpDone=true;save();render();}}
+function markWriteUpDone(id) { const s=D.sessions.find(x=>x.id===id); if(s){s.writeUpDone=true;save('sessions');render();} }
+function markFollowUpDone(id) { const s=D.sessions.find(x=>x.id===id); if(s){s.followUpDone=true;save('sessions');render();} }
 
-function renderClients(){const el=document.getElementById('client-list');if(!D.clients.length){el.innerHTML='<div class="empty">No clients yet — add your first one!</div>';return;}el.innerHTML=D.clients.map(c=>{const cs=D.sessions.filter(s=>s.clientId===c.id||s.clientName===c.name);const last=cs.sort((a,b)=>b.date.localeCompare(a.date))[0];const total=cs.filter(s=>s.amount).reduce((a,s)=>a+Number(s.amount||0),0);const pkgUsed=cs.filter(s=>s.type==='Package Session').length;const overdue=daysAgo(last?.date)>=(D.settings.followUpDays||28);return`<div class="list-item${overdue?' urgent':''}"><div class="item-row"><div><div class="item-main">${c.name}</div>${c.dogName?`<div class="item-sub">🐕 ${c.dogName}${c.dogBreed?' — '+c.dogBreed:''}</div>`:''}${c.notes?`<div class="item-sub" style="font-style:italic;margin-top:2px;">${c.notes}</div>`:''}</div><div style="text-align:right;"><div class="item-amount">${fc(total)}</div><div class="item-sub">${cs.length} session${cs.length!==1?'s':''}</div>${last?`<div class="item-sub" style="color:${overdue?'var(--red)':'var(--mid)'};">${fmtDate(last.date)}</div>`:''}</div></div>${c.packageSize?`<div style="margin-top:8px;font-size:12px;color:var(--mid);">📦 Package: ${pkgUsed}/${c.packageSize} sessions</div>`:''}<div class="btn-row"><button class="btn-sm" onclick="openModal('client','${c.id}')">Edit</button><button class="btn-sm btn-danger" onclick="deleteItem('clients','${c.id}')">Delete</button></div></div>`;}).join('');}
+function renderClients() {
+  const el = document.getElementById('client-list');
+  if (!D.clients.length) { el.innerHTML='<div class="empty">No clients yet — add your first one!</div>'; return; }
+  el.innerHTML = D.clients.map(c => {
+    const cs = D.sessions.filter(s=>s.clientId===c.id||s.clientName===c.name);
+    const last = cs.sort((a,b)=>b.date.localeCompare(a.date))[0];
+    const total = cs.filter(s=>s.amount).reduce((a,s)=>a+Number(s.amount||0),0);
+    const pkgUsed = cs.filter(s=>s.type==='Package Session').length;
+    const overdue = daysAgo(last?.date) >= (D.settings.followUpDays||28);
+    return `<div class="list-item${overdue?' urgent':''}"><div class="item-row"><div><div class="item-main">${c.name}</div>${c.dogName?`<div class="item-sub">🐕 ${c.dogName}${c.dogBreed?' — '+c.dogBreed:''}</div>`:''}${c.notes?`<div class="item-sub" style="font-style:italic;">${c.notes}</div>`:''}</div><div style="text-align:right;"><div class="item-amount">${fc(total)}</div><div class="item-sub">${cs.length} session${cs.length!==1?'s':''}</div>${last?`<div class="item-sub" style="color:${overdue?'var(--red)':'var(--mid)'};">${fmtDate(last.date)}</div>`:''}</div></div>${c.packageSize?`<div style="margin-top:8px;font-size:12px;color:var(--mid);">📦 Package: ${pkgUsed}/${c.packageSize} sessions</div>`:''}<div class="btn-row"><button class="btn-sm" onclick="openModal('client','${c.id}')">Edit</button><button class="btn-sm btn-danger" onclick="deleteItem('clients','${c.id}')">Delete</button></div></div>`;
+  }).join('');
+}
 
-function renderFinance(){const cm=nowMonth();const sThis=D.sessions.filter(s=>monthKey(s.date)===cm&&s.amount);const cThis=D.costs.filter(c=>monthKey(c.date)===cm);const rev=sThis.reduce((a,s)=>a+Number(s.amount||0),0);const costs=cThis.reduce((a,c)=>a+Number(c.amount||0),0);document.getElementById('fin-revenue').textContent=fc(rev);document.getElementById('fin-profit').textContent=fc(rev-costs);document.getElementById('fin-costs-sub').textContent=`After ${fc(costs)} costs`;const months=[];let m=cm;for(let i=0;i<6;i++){months.unshift(m);m=prevMonth(m);}const maxRev=Math.max(...months.map(mo=>D.sessions.filter(s=>monthKey(s.date)===mo&&s.amount).reduce((a,s)=>a+Number(s.amount||0),0)),1);document.getElementById('finance-chart').innerHTML=months.map(mo=>{const r=D.sessions.filter(s=>monthKey(s.date)===mo&&s.amount).reduce((a,s)=>a+Number(s.amount||0),0);const h=Math.round((r/maxRev)*90);return`<div class="bar-wrap"><div class="bar-val">${r>0?'£'+Math.round(r):''}</div><div class="bar" style="height:${h}px;background:${mo===cm?'var(--accent)':'var(--dark)'}"></div><div class="bar-label">${monthLabel(mo)}</div></div>`;}).join('');const el=document.getElementById('cost-list');const sorted=[...D.costs].sort((a,b)=>b.date.localeCompare(a.date));if(!sorted.length){el.innerHTML='<div class="empty">No costs logged.</div>';return;}el.innerHTML=sorted.map(c=>`<div class="list-item"><div class="item-row"><div><div class="item-main">${c.label}</div><div class="item-sub">${c.category} · ${fmtDate(c.date)}</div></div><div style="display:flex;align-items:center;gap:8px;"><div class="item-amount">${fc(c.amount)}</div><button class="btn-sm btn-danger" onclick="deleteItem('costs','${c.id}')">✕</button></div></div></div>`).join('');}
+function renderFinance() {
+  const cm = nowMonth();
+  const rev = D.sessions.filter(s=>monthKey(s.date)===cm&&s.amount).reduce((a,s)=>a+Number(s.amount||0),0);
+  const costs = D.costs.filter(c=>monthKey(c.date)===cm).reduce((a,c)=>a+Number(c.amount||0),0);
+  document.getElementById('fin-revenue').textContent = fc(rev);
+  document.getElementById('fin-profit').textContent = fc(rev-costs);
+  document.getElementById('fin-costs-sub').textContent = `After ${fc(costs)} costs`;
+  const months = []; let m = cm;
+  for (let i=0;i<6;i++) { months.unshift(m); m=prevMonth(m); }
+  const maxRev = Math.max(...months.map(mo=>D.sessions.filter(s=>monthKey(s.date)===mo&&s.amount).reduce((a,s)=>a+Number(s.amount||0),0)),1);
+  document.getElementById('finance-chart').innerHTML = months.map(mo=>{ const r=D.sessions.filter(s=>monthKey(s.date)===mo&&s.amount).reduce((a,s)=>a+Number(s.amount||0),0); const h=Math.round((r/maxRev)*90); return `<div class="bar-wrap"><div class="bar-val">${r>0?'£'+Math.round(r):''}</div><div class="bar" style="height:${h}px;background:${mo===cm?'var(--accent)':'var(--dark)'}"></div><div class="bar-label">${monthLabel(mo)}</div></div>`; }).join('');
+  const el = document.getElementById('cost-list');
+  const sorted = [...D.costs].sort((a,b)=>b.date.localeCompare(a.date));
+  el.innerHTML = sorted.length ? sorted.map(c=>`<div class="list-item"><div class="item-row"><div><div class="item-main">${c.label}</div><div class="item-sub">${c.category} · ${fmtDate(c.date)}</div></div><div style="display:flex;align-items:center;gap:8px;"><div class="item-amount">${fc(c.amount)}</div><button class="btn-sm btn-danger" onclick="deleteItem('costs','${c.id}')">✕</button></div></div></div>`).join('') : '<div class="empty">No costs logged.</div>';
+}
 
-let contentFilter='all';
-function filterContent(f){contentFilter=f;document.querySelectorAll('[id^="filter-"]').forEach(b=>b.style.fontWeight='');document.getElementById('filter-'+f).style.fontWeight='600';renderContent();}
-function renderContent(){const el=document.getElementById('content-list');let items=[...D.content].sort((a,b)=>(a.scheduledDate||'9999').localeCompare(b.scheduledDate||'9999'));if(contentFilter!=='all')items=items.filter(c=>c.status===contentFilter);if(!items.length){el.innerHTML='<div class="empty">Nothing here yet.</div>';}else{el.innerHTML=items.map(c=>{const statusLabels={idea:'Idea',planned:'Planned',ready:'Ready to post',posted:'Posted'};const due=c.scheduledDate?daysUntil(c.scheduledDate):null;return`<div class="list-item"><div class="item-row"><div style="flex:1"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px;"><div class="item-main">${c.title}</div><span class="content-status status-${c.status}">${statusLabels[c.status]}</span></div><div class="item-sub">${c.format}${c.platform?' · '+c.platform:''}</div>${c.scheduledDate?`<div class="item-sub" style="color:${due<0?'var(--red)':due===0?'var(--accent)':'var(--mid)'};">${due<0?'Overdue — ':due===0?'Today — ':''}${fmtDate(c.scheduledDate)}</div>`:''}${c.notes?`<div class="item-sub" style="font-style:italic;margin-top:3px;">${c.notes}</div>`:''}</div></div><div class="btn-row">${c.status!=='posted'?`<button class="btn-sm btn-green" onclick="markPosted('${c.id}')">✓ Posted</button>`:''}${c.scheduledDate?CalBtn(c.title+' (post)',c.scheduledDate,c.notes||''):''}<button class="btn-sm btn-danger" onclick="deleteItem('content','${c.id}')">Delete</button></div></div>`;}).join('');}const iel=document.getElementById('idea-list');if(!D.ideas.length){iel.innerHTML='<div class="empty">Dump your content ideas here before they disappear!</div>';return;}iel.innerHTML=D.ideas.map(i=>`<div class="list-item"><div class="item-row"><div style="flex:1"><div class="item-main">${i.text}</div>${i.tags?`<div style="margin-top:4px;">${i.tags.split(',').map(t=>`<span class="idea-tag">${t.trim()}</span>`).join('')}</div>`:''}</div><div style="display:flex;gap:6px;"><button class="btn-sm" onclick="ideaToContent('${i.id}')">→ Plan</button><button class="btn-sm btn-danger" onclick="deleteItem('ideas','${i.id}')">✕</button></div></div></div>`).join('');}
-function markPosted(id){const c=D.content.find(x=>x.id===id);if(c){c.status='posted';save();renderContent();}}
-function ideaToContent(id){const i=D.ideas.find(x=>x.id===id);if(i){openModal('content',null,i.text);}}
+let contentFilter = 'all';
+function filterContent(f) { contentFilter=f; document.querySelectorAll('[id^="filter-"]').forEach(b=>b.style.fontWeight=''); document.getElementById('filter-'+f).style.fontWeight='600'; renderContent(); }
+function renderContent() {
+  const el = document.getElementById('content-list');
+  let items = [...D.content].sort((a,b)=>(a.scheduledDate||'9999').localeCompare(b.scheduledDate||'9999'));
+  if (contentFilter!=='all') items = items.filter(c=>c.status===contentFilter);
+  const labels = {idea:'Idea',planned:'Planned',ready:'Ready to post',posted:'Posted'};
+  el.innerHTML = items.length ? items.map(c=>{ const due=c.scheduledDate?daysUntil(c.scheduledDate):null; return `<div class="list-item"><div class="item-row"><div style="flex:1"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px;"><div class="item-main">${c.title}</div><span class="content-status status-${c.status}">${labels[c.status]}</span></div><div class="item-sub">${c.format}${c.platform?' · '+c.platform:''}</div>${c.scheduledDate?`<div class="item-sub" style="color:${due<0?'var(--red)':due===0?'var(--accent)':'var(--mid)'};">${due<0?'Overdue — ':due===0?'Today — ':''}${fmtDate(c.scheduledDate)}</div>`:''}${c.notes?`<div class="item-sub" style="font-style:italic;margin-top:3px;">${c.notes}</div>`:''}</div></div><div class="btn-row">${c.status!=='posted'?`<button class="btn-sm btn-green" onclick="markPosted('${c.id}')">✓ Posted</button>`:''}${c.scheduledDate?CalBtn(c.title,c.scheduledDate,c.notes||''):''}<button class="btn-sm btn-danger" onclick="deleteItem('content','${c.id}')">Delete</button></div></div>`; }).join('') : '<div class="empty">Nothing here yet.</div>';
+  const iel = document.getElementById('idea-list');
+  iel.innerHTML = D.ideas.length ? D.ideas.map(i=>`<div class="list-item"><div class="item-row"><div style="flex:1"><div class="item-main">${i.text}</div>${i.tags?`<div style="margin-top:4px;">${i.tags.split(',').map(t=>`<span class="idea-tag">${t.trim()}</span>`).join('')}</div>`:''}</div><div style="display:flex;gap:6px;"><button class="btn-sm" onclick="ideaToContent('${i.id}')">→ Plan</button><button class="btn-sm btn-danger" onclick="deleteItem('ideas','${i.id}')">✕</button></div></div></div>`).join('') : '<div class="empty">Dump your content ideas here before they disappear!</div>';
+}
+function markPosted(id) { const c=D.content.find(x=>x.id===id); if(c){c.status='posted';save('content');renderContent();} }
+function ideaToContent(id) { const i=D.ideas.find(x=>x.id===id); if(i)openModal('content',null,i.text); }
 
-function renderTodos(){const el=document.getElementById('todo-list');const incomplete=D.todos.filter(t=>!t.done);const complete=D.todos.filter(t=>t.done);const all=[...incomplete.sort((a,b)=>(a.dueDate||'9999').localeCompare(b.dueDate||'9999')),...complete.slice(0,5)];if(!all.length){el.innerHTML='<div class="empty">Nothing to do — enjoy it while it lasts!</div>';return;}el.innerHTML=all.map(t=>{const due=t.dueDate?daysUntil(t.dueDate):null;const overdue=due!==null&&due<0&&!t.done;return`<div class="todo-item"><div class="todo-check ${t.done?'checked':''}" onclick="toggleTodo('${t.id}')">${t.done?'<svg width="10" height="10" viewBox="0 0 10 10"><polyline points="1.5,5 4,7.5 8.5,2" stroke="white" stroke-width="1.5" fill="none"/></svg>':''}</div><div style="flex:1"><div class="todo-text ${t.done?'checked':''}">${t.text}</div>${t.notes?`<div style="font-size:11px;color:var(--mid);">${t.notes}</div>`:''}</div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">${t.dueDate?`<div class="todo-due ${overdue?'overdue':''}">${overdue?'Overdue':due===0?'Today':fmtDate(t.dueDate)}</div>`:''}${t.dueDate&&!t.done?CalBtn(t.text,t.dueDate,t.notes||''):''}<button class="btn-sm btn-danger" onclick="deleteItem('todos','${t.id}')" style="font-size:10px;padding:3px 8px;">✕</button></div></div>`;}).join('');}
-function toggleTodo(id){const t=D.todos.find(x=>x.id===id);if(t){t.done=!t.done;save();renderTodos();}}
-function deleteItem(collection,id){if(!confirm('Delete this?'))return;D[collection]=D[collection].filter(x=>x.id!==id);save();render();}
+function renderTodos() {
+  const el = document.getElementById('todo-list');
+  const all = [...D.todos.filter(t=>!t.done).sort((a,b)=>(a.dueDate||'9999').localeCompare(b.dueDate||'9999')), ...D.todos.filter(t=>t.done).slice(0,5)];
+  if (!all.length) { el.innerHTML='<div class="empty">Nothing to do — enjoy it while it lasts!</div>'; return; }
+  el.innerHTML = all.map(t=>{ const due=t.dueDate?daysUntil(t.dueDate):null; const ov=due!==null&&due<0&&!t.done; return `<div class="todo-item"><div class="todo-check ${t.done?'checked':''}" onclick="toggleTodo('${t.id}')">${t.done?'<svg width="10" height="10" viewBox="0 0 10 10"><polyline points="1.5,5 4,7.5 8.5,2" stroke="white" stroke-width="1.5" fill="none"/></svg>':''}</div><div style="flex:1"><div class="todo-text ${t.done?'checked':''}">${t.text}</div>${t.notes?`<div style="font-size:11px;color:var(--mid);">${t.notes}</div>`:''}</div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">${t.dueDate?`<div class="todo-due ${ov?'overdue':''}">${ov?'Overdue':due===0?'Today':fmtDate(t.dueDate)}</div>`:''}${t.dueDate&&!t.done?CalBtn(t.text,t.dueDate,t.notes||''):''}<button class="btn-sm btn-danger" onclick="deleteItem('todos','${t.id}')" style="font-size:10px;padding:3px 8px;">✕</button></div></div>`; }).join('');
+}
+function toggleTodo(id) { const t=D.todos.find(x=>x.id===id); if(t){t.done=!t.done;save('todos');renderTodos();} }
 
-function openModal(type,editId,prefill){const el=document.getElementById('modal-body');if(type==='client')el.innerHTML=clientForm(editId?D.clients.find(c=>c.id===editId):null);else if(type==='addAmount')el.innerHTML=addAmountForm(editId);else if(type==='cost')el.innerHTML=costForm();else if(type==='content')el.innerHTML=contentForm(prefill);else if(type==='idea')el.innerHTML=ideaForm();else if(type==='todo')el.innerHTML=todoForm();document.getElementById('modal-overlay').classList.add('open');}
-function closeModal(e){if(e.target===document.getElementById('modal-overlay'))document.getElementById('modal-overlay').classList.remove('open');}
-function closeModalForce(){document.getElementById('modal-overlay').classList.remove('open');}
-function val(id){const el=document.getElementById(id);return el?el.value.trim():'';}
+function deleteItem(collection, id) {
+  if (!confirm('Delete this?')) return;
+  D[collection] = D[collection].filter(x=>x.id!==id);
+  save(collection); render();
+}
 
-function addAmountForm(sessionId){const s=D.sessions.find(x=>x.id===sessionId);const name=s?s.clientName||extractClientName(s.acuityTitle||''):'';const types=['1:1 Session','Day Train','Package Session','Consultation','Follow-up','Other'];return`<div class="modal-title">Log session amount</div><p style="font-size:13px;color:var(--mid);margin-bottom:16px;">${name} · ${fmtDate(s?.date)}</p><div class="form-group"><label>Amount (£) *</label><input type="number" id="f-amount" placeholder="e.g. 65" autofocus></div><div class="form-group"><label>Session type</label><select id="f-type">${types.map(t=>`<option${t===(s?.type||'1:1 Session')?' selected':''}>${t}</option>`).join('')}</select></div><div class="form-group"><label>Notes</label><input id="f-notes" value="${s?.notes||''}" placeholder="Quick session notes"></div><div style="display:flex;gap:10px;margin-top:4px;"><button class="btn" style="flex:1" onclick="saveAmount('${sessionId}')">Save</button><button class="btn-sm" onclick="closeModalForce()">Cancel</button></div>`;}
-function saveAmount(sessionId){const amount=val('f-amount');if(!amount)return;const s=D.sessions.find(x=>x.id===sessionId);if(s){s.amount=Number(amount);s.type=val('f-type')||s.type;s.notes=val('f-notes');}save();closeModalForce();render();}
+// ===================== MODALS =====================
+function openModal(type, editId, prefill) {
+  const el = document.getElementById('modal-body');
+  if (type==='client') el.innerHTML = clientForm(editId?D.clients.find(c=>c.id===editId):null);
+  else if (type==='addAmount') el.innerHTML = addAmountForm(editId);
+  else if (type==='cost') el.innerHTML = costForm();
+  else if (type==='content') el.innerHTML = contentForm(prefill);
+  else if (type==='idea') el.innerHTML = ideaForm();
+  else if (type==='todo') el.innerHTML = todoForm();
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function closeModal(e) { if(e.target===document.getElementById('modal-overlay'))document.getElementById('modal-overlay').classList.remove('open'); }
+function closeModalForce() { document.getElementById('modal-overlay').classList.remove('open'); }
+function val(id) { const el=document.getElementById(id); return el?el.value.trim():''; }
 
-function clientForm(c){return`<div class="modal-title">${c?'Edit client':'New client'}</div><div class="form-group"><label>Client name *</label><input id="f-name" value="${c?.name||''}" placeholder="e.g. Sarah Jones"></div><div class="form-group"><label>Dog's name</label><input id="f-dog" value="${c?.dogName||''}" placeholder="e.g. Buddy"></div><div class="form-group"><label>Breed</label><input id="f-breed" value="${c?.dogBreed||''}" placeholder="e.g. Labrador"></div><div class="form-group"><label>Package size</label><select id="f-pkg"><option value="0">No package</option>${[3,4,5,6,10].map(n=>`<option value="${n}"${c?.packageSize==n?' selected':''}>${n} sessions</option>`).join('')}</select></div><div class="form-group"><label>Notes</label><textarea id="f-notes" placeholder="e.g. Reactive to dogs on lead, nervous owner">${c?.notes||''}</textarea></div><div style="display:flex;gap:10px;margin-top:4px;"><button class="btn" style="flex:1" onclick="saveClient('${c?.id||''}')">Save</button><button class="btn-sm" onclick="closeModalForce()">Cancel</button></div>`;}
-function saveClient(editId){const name=val('f-name');if(!name)return;const obj={name,dogName:val('f-dog'),dogBreed:val('f-breed'),packageSize:Number(document.getElementById('f-pkg').value),notes:val('f-notes')};if(editId){const i=D.clients.findIndex(c=>c.id===editId);D.clients[i]={...D.clients[i],...obj};}else{D.clients.push({...obj,id:uid()});}save();closeModalForce();render();}
+function addAmountForm(sid) {
+  const s=D.sessions.find(x=>x.id===sid); const name=s?s.clientName||extractClientName(s.acuityTitle||''):'';
+  const types=['1:1 Session','Day Train','Package Session','Consultation','Follow-up','Other'];
+  return `<div class="modal-title">Log session amount</div><p style="font-size:13px;color:var(--mid);margin-bottom:16px;">${name} · ${fmtDate(s?.date)}</p><div class="form-group"><label>Amount (£) *</label><input type="number" id="f-amount" placeholder="e.g. 65" autofocus></div><div class="form-group"><label>Session type</label><select id="f-type">${types.map(t=>`<option${t===(s?.type||'1:1 Session')?' selected':''}>${t}</option>`).join('')}</select></div><div class="form-group"><label>Notes</label><input id="f-notes" value="${s?.notes||''}" placeholder="Quick session notes"></div><div style="display:flex;gap:10px;margin-top:4px;"><button class="btn" style="flex:1" onclick="saveAmount('${sid}')">Save</button><button class="btn-sm" onclick="closeModalForce()">Cancel</button></div>`;
+}
+function saveAmount(sid) {
+  const amount=val('f-amount'); if(!amount)return;
+  const s=D.sessions.find(x=>x.id===sid);
+  if(s){s.amount=Number(amount);s.type=val('f-type')||s.type;s.notes=val('f-notes');}
+  save('sessions'); closeModalForce(); render();
+}
 
-function costForm(){const cats=['Fuel','Insurance','Equipment','Training & CPD','Marketing','Software','Other'];return`<div class="modal-title">Add cost</div><div class="form-group"><label>Description *</label><input id="f-label" placeholder="e.g. Fuel to Mansfield client"></div><div class="form-group"><label>Category</label><select id="f-cat">${cats.map(c=>`<option>${c}</option>`).join('')}</select></div><div class="form-group"><label>Date</label><input type="date" id="f-date" value="${today()}"></div><div class="form-group"><label>Amount (£) *</label><input type="number" id="f-amount" placeholder="e.g. 12.50"></div><div style="display:flex;gap:10px;margin-top:4px;"><button class="btn" style="flex:1" onclick="saveCost()">Save</button><button class="btn-sm" onclick="closeModalForce()">Cancel</button></div>`;}
-function saveCost(){const label=val('f-label');const amount=val('f-amount');if(!label||!amount)return;D.costs.push({id:uid(),label,category:val('f-cat')||'Other',date:val('f-date')||today(),amount:Number(amount)});save();closeModalForce();render();}
+function clientForm(c) {
+  return `<div class="modal-title">${c?'Edit client':'New client'}</div><div class="form-group"><label>Client name *</label><input id="f-name" value="${c?.name||''}" placeholder="e.g. Sarah Jones"></div><div class="form-group"><label>Dog's name</label><input id="f-dog" value="${c?.dogName||''}" placeholder="e.g. Buddy"></div><div class="form-group"><label>Breed</label><input id="f-breed" value="${c?.dogBreed||''}" placeholder="e.g. Labrador"></div><div class="form-group"><label>Package size</label><select id="f-pkg"><option value="0">No package</option>${[3,4,5,6,10].map(n=>`<option value="${n}"${c?.packageSize==n?' selected':''}>${n} sessions</option>`).join('')}</select></div><div class="form-group"><label>Notes</label><textarea id="f-notes" placeholder="e.g. Reactive to dogs on lead, nervous owner">${c?.notes||''}</textarea></div><div style="display:flex;gap:10px;margin-top:4px;"><button class="btn" style="flex:1" onclick="saveClient('${c?.id||''}')">Save</button><button class="btn-sm" onclick="closeModalForce()">Cancel</button></div>`;
 
-function contentForm(prefill){const formats=['Carousel','Reel','Static post','Story','Other'];const statuses=[['idea','Idea'],['planned','Planned'],['ready','Ready to post'],['posted','Posted']];const platforms=['Instagram','Facebook','Both'];return`<div class="modal-title">Add content</div><div class="form-group"><label>Title / topic *</label><input id="f-title" value="${prefill||''}" placeholder="e.g. What is proofing?"></div><div class="form-group"><label>Format</label><select id="f-format">${formats.map(f=>`<option>${f}</option>`).join('')}</select></div><div class="form-group"><label>Platform</label><select id="f-platform">${platforms.map(p=>`<option>${p}</option>`).join('')}</select></div><div class="form-group"><label>Status</label><select id="f-status">${statuses.map(([v,l])=>`<option value="${v}">${l}</option>`).join('')}</select></div><div class="form-group"><label>Scheduled date</label><input type="date" id="f-date"></div><div class="form-group"><label>Notes / caption ideas</label><textarea id="f-notes" placeholder="Any notes, angles, caption ideas..."></textarea></div><div style="display:flex;gap:10px;margin-top:4px;"><button class="btn" style="flex:1" onclick="saveContent()">Save</button><button class="btn-sm" onclick="closeModalForce()">Cancel</button></div>`;}
-function saveContent(){const title=val('f-title');if(!title)return;D.content.push({id:uid(),title,format:val('f-format')||'Carousel',platform:val('f-platform')||'Both',status:val('f-status')||'idea',scheduledDate:val('f-date')||null,notes:val('f-notes')});save();closeModalForce();render();}
+}
+function saveClient(editId) {
+const name=val(‘f-name’); if(!name)return;
+const obj={name,dogName:val(‘f-dog’),dogBreed:val(‘f-breed’),packageSize:Number(document.getElementById(‘f-pkg’).value),notes:val(‘f-notes’)};
+if(editId){const i=D.clients.findIndex(c=>c.id===editId);D.clients[i]={…D.clients[i],…obj};}
+else{D.clients.push({…obj,id:uid()});}
+save(‘clients’); closeModalForce(); render();
+}
 
-function ideaForm(){return`<div class="modal-title">💡 New idea</div><div class="form-group"><label>Idea *</label><textarea id="f-text" placeholder="e.g. Why your dog isn't 'being stubborn' — what's really going on" rows="3"></textarea></div><div class="form-group"><label>Tags (comma separated)</label><input id="f-tags" placeholder="e.g. reactivity, carousel, educational"></div><div style="display:flex;gap:10px;margin-top:4px;"><button class="btn" style="flex:1" onclick="saveIdea()">Save idea</button><button class="btn-sm" onclick="closeModalForce()">Cancel</button></div>`;}
-function saveIdea(){const text=val('f-text');if(!text)return;D.ideas.push({id:uid(),text,tags:val('f-tags')});save();closeModalForce();renderContent();}
+function costForm() {
+const cats=[‘Fuel’,‘Insurance’,‘Equipment’,‘Training & CPD’,‘Marketing’,‘Software’,‘Other’];
+return `<div class="modal-title">Add cost</div><div class="form-group"><label>Description *</label><input id="f-label" placeholder="e.g. Fuel to Mansfield client"></div><div class="form-group"><label>Category</label><select id="f-cat">${cats.map(c=>`<option>${c}</option>`).join('')}</select></div><div class="form-group"><label>Date</label><input type="date" id="f-date" value="${today()}"></div><div class="form-group"><label>Amount (£) *</label><input type="number" id="f-amount" placeholder="e.g. 12.50"></div><div style="display:flex;gap:10px;margin-top:4px;"><button class="btn" style="flex:1" onclick="saveCost()">Save</button><button class="btn-sm" onclick="closeModalForce()">Cancel</button></div>`;
+}
+function saveCost() {
+const label=val(‘f-label’); const amount=val(‘f-amount’); if(!label||!amount)return;
+D.costs.push({id:uid(),label,category:val(‘f-cat’)||‘Other’,date:val(‘f-date’)||today(),amount:Number(amount)});
+save(‘costs’); closeModalForce(); render();
+}
 
-function todoForm(){return`<div class="modal-title">New to-do</div><div class="form-group"><label>Task *</label><input id="f-text" placeholder="e.g. Email back enquiry about reactive spaniel"></div><div class="form-group"><label>Notes</label><input id="f-notes" placeholder="Any extra detail"></div><div class="form-group"><label>Due date</label><input type="date" id="f-date"></div><div style="display:flex;gap:10px;margin-top:4px;"><button class="btn" style="flex:1" onclick="saveTodo()">Save</button><button class="btn-sm" onclick="closeModalForce()">Cancel</button></div>`;}
-function saveTodo(){const text=val('f-text');if(!text)return;D.todos.push({id:uid(),text,notes:val('f-notes'),dueDate:val('f-date')||null,done:false});save();closeModalForce();renderTodos();}
+function contentForm(prefill) {
+const formats=[‘Carousel’,‘Reel’,‘Static post’,‘Story’,‘Other’];
+const statuses=[[‘idea’,‘Idea’],[‘planned’,‘Planned’],[‘ready’,‘Ready to post’],[‘posted’,‘Posted’]];
+const platforms=[‘Instagram’,‘Facebook’,‘Both’];
+return `<div class="modal-title">Add content</div><div class="form-group"><label>Title / topic *</label><input id="f-title" value="${prefill||''}" placeholder="e.g. What is proofing?"></div><div class="form-group"><label>Format</label><select id="f-format">${formats.map(f=>`<option>${f}</option>`).join('')}</select></div><div class="form-group"><label>Platform</label><select id="f-platform">${platforms.map(p=>`<option>${p}</option>`).join('')}</select></div><div class="form-group"><label>Status</label><select id="f-status">${statuses.map(([v,l])=>`<option value="${v}">${l}</option>`).join('')}</select></div><div class="form-group"><label>Scheduled date</label><input type="date" id="f-date"></div><div class="form-group"><label>Notes / caption ideas</label><textarea id="f-notes" placeholder="Any notes, angles, caption ideas..."></textarea></div><div style="display:flex;gap:10px;margin-top:4px;"><button class="btn" style="flex:1" onclick="saveContent()">Save</button><button class="btn-sm" onclick="closeModalForce()">Cancel</button></div>`;
+}
+function saveContent() {
+const title=val(‘f-title’); if(!title)return;
+D.content.push({id:uid(),title,format:val(‘f-format’)||‘Carousel’,platform:val(‘f-platform’)||‘Both’,status:val(‘f-status’)||‘idea’,scheduledDate:val(‘f-date’)||null,notes:val(‘f-notes’)});
+save(‘content’); closeModalForce(); render();
+}
 
-function exportData(){const blob=new Blob([JSON.stringify(D,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='petshil-backup.json';a.click();}
-function clearData(){if(confirm('This will delete ALL your data. Are you sure?')){localStorage.removeItem(STORE);D=load();save();render();}}
+function ideaForm() {
+return `<div class="modal-title">💡 New idea</div><div class="form-group"><label>Idea *</label><textarea id="f-text" placeholder="e.g. Why your dog isn't 'being stubborn' — what's really going on" rows="3"></textarea></div><div class="form-group"><label>Tags (comma separated)</label><input id="f-tags" placeholder="e.g. reactivity, carousel, educational"></div><div style="display:flex;gap:10px;margin-top:4px;"><button class="btn" style="flex:1" onclick="saveIdea()">Save idea</button><button class="btn-sm" onclick="closeModalForce()">Cancel</button></div>`;
+}
+function saveIdea() { const text=val(‘f-text’); if(!text)return; D.ideas.push({id:uid(),text,tags:val(‘f-tags’)}); save(‘ideas’); closeModalForce(); renderContent(); }
 
-currentWeekStart=getWeekStart(today());
+function todoForm() {
+return `<div class="modal-title">New to-do</div><div class="form-group"><label>Task *</label><input id="f-text" placeholder="e.g. Email back enquiry about reactive spaniel"></div><div class="form-group"><label>Notes</label><input id="f-notes" placeholder="Any extra detail"></div><div class="form-group"><label>Due date</label><input type="date" id="f-date"></div><div style="display:flex;gap:10px;margin-top:4px;"><button class="btn" style="flex:1" onclick="saveTodo()">Save</button><button class="btn-sm" onclick="closeModalForce()">Cancel</button></div>`;
+}
+function saveTodo() { const text=val(‘f-text’); if(!text)return; D.todos.push({id:uid(),text,notes:val(‘f-notes’),dueDate:val(‘f-date’)||null,done:false}); save(‘todos’); closeModalForce(); renderTodos(); }
+
+function clearData() { if(confirm(‘This will delete ALL your data everywhere. Are you sure?’)){D={clients:[],sessions:[],costs:[],content:[],ideas:[],todos:[],settings:{targetIncome:1500,followUpDays:28,writeUpDays:2}};save();render();} }
+
+// ===================== INIT =====================
+currentWeekStart = getWeekStart(today());
+loadLocal();
 render();
-syncAcuity(false);
+loadFromCloud().then(() => syncAcuity());
 </script>
+
 </body>
 </html>
