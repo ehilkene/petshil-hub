@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Pets Hil — Business Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f7f4ef;
+    --card: #ffffff;
+    --dark: #1e1a14;
+    --mid: #6b5f4a;
+    --light: #c4b89a;
+    --accent: #d4622a;
+    --green: #3d7a5a;
+    --red: #b84040;
+    --yellow: #c8941a;
+    --border: #e4ddd0;
+    --shadow: 0 2px 12px rgba(30,26,20,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--dark); min-height: 100vh; }
+  h1,h2,h3 { font-family: 'Playfair Display', serif; }
+  .nav { background: var(--dark); position: sticky; top: 0; z-index: 200; padding: 0 16px; }
+  .nav-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 0 0; }
+  .nav-logo { font-family: 'Playfair Display', serif; color: #e8d5a3; font-size: 20px; font-weight: 700; letter-spacing: -0.3px; }
+  .nav-sub { font-family: 'DM Sans', sans-serif; color: var(--light); font-size: 10px; text-transform: uppercase; letter-spacing: 2px; margin-top: 1px; }
+  .nav-tabs { display: flex; gap: 2px; padding-top: 10px; overflow-x: auto; scrollbar-width: none; }
+  .nav-tabs::-webkit-scrollbar { display: none; }
+  .nav-tab { background: transparent; border: none; color: #8a7a60; font-family: 'DM Sans', sans-serif; font-size: 12px; padding: 8px 12px; border-radius: 6px 6px 0 0; cursor: pointer; white-space: nowrap; transition: all 0.15s; }
+  .nav-tab.active { background: var(--bg); color: var(--dark); font-weight: 600; }
+  .page { display: none; padding: 20px 16px 100px; max-width: 680px; margin: 0 auto; }
+  .page.active { display: block; }
+  .card { background: var(--card); border-radius: 12px; border: 1px solid var(--border); padding: 16px; margin-bottom: 12px; box-shadow: var(--shadow); }
+  .card-title { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--mid); margin-bottom: 10px; font-weight: 600; }
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .stat-card { background: var(--card); border-radius: 12px; border: 1px solid var(--border); padding: 14px; box-shadow: var(--shadow); }
+  .stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--mid); margin-bottom: 6px; }
+  .stat-value { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 700; line-height: 1; }
+  .stat-sub { font-size: 11px; margin-top: 5px; }
+  .progress-track { background: var(--border); border-radius: 99px; height: 7px; }
+  .progress-fill { background: var(--dark); border-radius: 99px; height: 7px; transition: width 0.5s ease; }
+  .btn { background: var(--dark); color: #e8d5a3; border: none; border-radius: 9px; padding: 11px 18px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: opacity 0.15s; }
+  .btn:active { opacity: 0.8; }
+  .btn-sm { background: #f0ece4; color: var(--dark); border: 1px solid var(--border); border-radius: 7px; padding: 6px 12px; font-family: 'DM Sans', sans-serif; font-size: 12px; cursor: pointer; }
+  .btn-danger { background: #fff0f0; color: var(--red); border: 1px solid #f0c8c8; }
+  .btn-green { background: #e8f4ee; color: var(--green); border: 1px solid #b8ddc8; }
+  .btn-cal { background: #e8f0ff; color: #3a5cc7; border: 1px solid #c0d0f0; font-size: 11px; padding: 5px 10px; }
+  .form-group { margin-bottom: 14px; }
+  label { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; color: var(--mid); margin-bottom: 5px; }
+  input, select, textarea { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); font-family: 'DM Sans', sans-serif; font-size: 14px; background: var(--bg); color: var(--dark); outline: none; transition: border-color 0.15s; }
+  input:focus, select:focus, textarea:focus { border-color: var(--dark); }
+  textarea { resize: vertical; min-height: 70px; }
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(30,26,20,0.55); z-index: 500; align-items: flex-end; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--bg); border-radius: 18px 18px 0 0; padding: 24px 20px 40px; width: 100%; max-height: 88vh; overflow-y: auto; }
+  .modal-title { font-family: 'Playfair Display', serif; font-size: 18px; margin-bottom: 18px; }
+  .list-item { background: var(--card); border-radius: 10px; border: 1px solid var(--border); padding: 14px; margin-bottom: 8px; }
+  .list-item.urgent { border-color: #e8c4a0; background: #fffaf5; }
+  .item-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+  .item-main { font-weight: 600; font-size: 14px; }
+  .item-sub { font-size: 12px; color: var(--mid); margin-top: 2px; }
+  .item-amount { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; white-space: nowrap; }
+  .btn-row { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+  .chart-wrap { overflow-x: auto; padding-bottom: 4px; }
+  .chart { display: flex; align-items: flex-end; gap: 8px; height: 100px; padding: 0 4px; min-width: max-content; }
+  .bar-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .bar { width: 32px; border-radius: 4px 4px 0 0; background: var(--dark); transition: height 0.4s ease; min-height: 3px; }
+  .bar-label { font-size: 9px; color: var(--mid); text-align: center; }
+  .bar-val { font-size: 9px; font-weight: 600; color: var(--dark); }
+  .todo-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .todo-item:last-child { border-bottom: none; }
+  .todo-check { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--border); cursor: pointer; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+  .todo-check.checked { background: var(--green); border-color: var(--green); }
+  .todo-text { flex: 1; font-size: 13px; }
+  .todo-text.checked { text-decoration: line-through; color: var(--mid); }
+  .todo-due { font-size: 10px; color: var(--mid); white-space: nowrap; }
+  .todo-due.overdue { color: var(--red); font-weight: 600; }
+  .content-status { display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 99px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .status-idea { background: #f0ece4; color: var(--mid); }
+  .status-planned { background: #e8f0ff; color: #3a5cc7; }
+  .status-ready { background: #fff4e0; color: var(--yellow); }
+  .status-posted { background: #e8f4ee; color: var(--green); }
+  .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .section-title { font-family: 'Playfair Display', serif; font-size: 20px; }
+  .empty { text-align: center; padding: 40px 20px; color: var(--mid); font-size: 13px; font-style: italic; }
+  .idea-tag { display: inline-block; background: #f0ece4; color: var(--mid); font-size: 10px; padding: 2px 8px; border-radius: 99px; margin: 2px; }
+  @media (max-width: 380px) { .stat-value { font-size: 22px; } }
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="nav-header">
+    <div><div class="nav-logo">Pets Hil</div><div class="nav-sub">Business Hub</div></div>
+    <div id="todayDate" style="font-size:11px;color:#8a7a60;text-align:right;"></div>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showTab('dashboard')">Today</button>
+    <button class="nav-tab" onclick="showTab('clients')">Clients</button>
+    <button class="nav-tab" onclick="showTab('sessions')">Sessions</button>
+    <button class="nav-tab" onclick="showTab('finance')">Finance</button>
+    <button class="nav-tab" onclick="showTab('content')">Content</button>
+    <button class="nav-tab" onclick="showTab('todos')">To-Do</button>
+    <button class="nav-tab" onclick="showTab('settings')">Settings</button>
+  </div>
+</div>
+<div id="page-dashboard" class="page active">
+  <div style="margin-bottom:18px;"><h2 style="font-size:24px;">Good <span id="greeting"></span>, Emily 👋</h2><p style="color:var(--mid);font-size:13px;margin-top:4px;">Here's what's on today.</p></div>
+  <div class="stat-grid">
+    <div class="stat-card"><div class="stat-label">This month</div><div class="stat-value" id="dash-revenue">£0</div><div class="stat-sub" id="dash-growth" style="color:var(--mid);">—</div></div>
+    <div class="stat-card"><div class="stat-label">Sessions (month)</div><div class="stat-value" id="dash-sessions">0</div><div class="stat-sub" id="dash-sessions-sub" style="color:var(--mid);">—</div></div>
+  </div>
+  <div class="card" id="dash-target-card">
+    <div class="card-title">Monthly target</div>
+    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px;"><span id="dash-target-label">—</span><span id="dash-target-pct" style="font-weight:600;">—</span></div>
+    <div class="progress-track"><div class="progress-fill" id="dash-target-bar" style="width:0%"></div></div>
+    <div id="dash-target-sub" style="font-size:11px;color:var(--mid);margin-top:6px;"></div>
+  </div>
+  <div class="card" id="dash-followups" style="display:none;"><div class="card-title">⏰ Follow-up reminders</div><div id="dash-followup-list"></div></div>
+  <div class="card" id="dash-writeups" style="display:none;"><div class="card-title">✍️ Write-ups due</div><div id="dash-writeup-list"></div></div>
+  <div class="card" id="dash-content-card" style="display:none;"><div class="card-title">📱 Content coming up</div><div id="dash-content-list"></div></div>
+  <div class="card" id="dash-packages" style="display:none;"><div class="card-title">📦 Packages finishing soon</div><div id="dash-package-list"></div></div>
+</div>
+<div id="page-clients" class="page"><div class="section-header"><h2 class="section-title">Clients</h2><button class="btn" onclick="openModal('client')">+ Add</button></div><div id="client-list"></div></div>
+<div id="page-sessions" class="page"><div class="section-header"><h2 class="section-title">Sessions</h2><button class="btn" onclick="openModal('session')">+ Log</button></div><div id="session-list"></div></div>
+<div id="page-finance" class="page">
+  <div class="section-header"><h2 class="section-title">Finance</h2></div>
+  <div class="stat-grid" style="margin-bottom:14px;">
+    <div class="stat-card"><div class="stat-label">This month income</div><div class="stat-value" id="fin-revenue">£0</div></div>
+    <div class="stat-card"><div class="stat-label">This month profit</div><div class="stat-value" id="fin-profit">£0</div><div class="stat-sub" id="fin-costs-sub" style="color:var(--mid);font-size:11px;"></div></div>
+  </div>
+  <div class="card"><div class="card-title">Revenue — last 6 months</div><div class="chart-wrap"><div class="chart" id="finance-chart"></div></div></div>
+  <div class="section-header" style="margin-top:18px;"><div style="font-size:15px;font-weight:600;">Costs</div><button class="btn-sm" onclick="openModal('cost')">+ Add cost</button></div>
+  <div id="cost-list"></div>
+</div>
+<div id="page-content" class="page">
+  <div class="section-header"><h2 class="section-title">Content</h2><button class="btn" onclick="openModal('content')">+ Add</button></div>
+  <div style="display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px;">
+    <button class="btn-sm" id="filter-all" onclick="filterContent('all')" style="font-weight:600;">All</button>
+    <button class="btn-sm" id="filter-idea" onclick="filterContent('idea')">Ideas</button>
+    <button class="btn-sm" id="filter-planned" onclick="filterContent('planned')">Planned</button>
+    <button class="btn-sm" id="filter-ready" onclick="filterContent('ready')">Ready</button>
+    <button class="btn-sm" id="filter-posted" onclick="filterContent('posted')">Posted</button>
+  </div>
+  <div id="content-list"></div>
+  <div style="margin-top:20px;"><div class="section-header"><div style="font-size:15px;font-weight:600;">💡 Ideas Bank</div><button class="btn-sm" onclick="openModal('idea')">+ Idea</button></div><div id="idea-list"></div></div>
+</div>
+<div id="page-todos" class="page"><div class="section-header"><h2 class="section-title">To-Do</h2><button class="btn" onclick="openModal('todo')">+ Add</button></div><div id="todo-list"></div></div>
+<div id="page-settings" class="page">
+  <h2 class="section-title" style="margin-bottom:18px;">Settings</h2>
+  <div class="card">
+    <div class="form-group"><label>Monthly income target (£)</label><input type="number" id="set-target" placeholder="e.g. 1500" oninput="saveSetting('targetIncome', this.value)"></div>
+    <div class="form-group"><label>Follow-up reminder (days since last session)</label><input type="number" id="set-followup" placeholder="e.g. 28" oninput="saveSetting('followUpDays', this.value)"></div>
+    <div class="form-group"><label>Write-up deadline (days after session)</label><input type="number" id="set-writeup" placeholder="e.g. 2" oninput="saveSetting('writeUpDays', this.value)"></div>
+  </div>
+  <div class="card" style="margin-top:4px;"><div class="card-title">Data</div><p style="font-size:12px;color:var(--mid);margin-bottom:12px;">Your data is saved in your browser. Use the export button to back it up.</p><div style="display:flex;gap:8px;"><button class="btn-sm" onclick="exportData()">Export backup</button><button class="btn-sm btn-danger" onclick="clearData()">Clear all data</button></div></div>
+</div>
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)"><div class="modal" id="modal-body"></div></div>
+<script>
+const STORE='petshil_v2';let D=load();
+function load(){try{const r=localStorage.getItem(STORE);const base={clients:[],sessions:[],costs:[],content:[],ideas:[],todos:[],settings:{targetIncome:1500,followUpDays:28,writeUpDays:2}};return r?Object.assign(base,JSON.parse(r)):base;}catch{return{clients:[],sessions:[],costs:[],content:[],ideas:[],todos:[],settings:{targetIncome:1500,followUpDays:28,writeUpDays:2}};}}
+function save(){try{localStorage.setItem(STORE,JSON.stringify(D));}catch{}}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+function showTab(tab){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));document.getElementById('page-'+tab).classList.add('active');const tabs=['dashboard','clients','sessions','finance','content','todos','settings'];document.querySelectorAll('.nav-tab')[tabs.indexOf(tab)].classList.add('active');render();}
+function today(){return new Date().toISOString().split('T')[0];}
+function fmtDate(d){if(!d)return'—';const x=new Date(d+'T12:00:00');return x.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
+function monthKey(d){return d?d.slice(0,7):'';}
+function daysAgo(d){if(!d)return 999;return Math.floor((Date.now()-new Date(d+'T12:00:00').getTime())/86400000);}
+function daysUntil(d){if(!d)return 999;return Math.floor((new Date(d+'T12:00:00').getTime()-Date.now())/86400000);}
+function addDays(d,n){const x=new Date(d+'T12:00:00');x.setDate(x.getDate()+n);return x.toISOString().split('T')[0];}
+function writeUpDeadline(sd){const dt=new Date(sd+'T12:00:00');const day=dt.getDay();const days=D.settings.writeUpDays||2;if(day===5)return addDays(sd,3);if(day===6)return addDays(sd,2);return addDays(sd,days);}
+function nowMonth(){const n=new Date();return`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}`;}
+function prevMonth(m){const[y,mo]=m.split('-').map(Number);return mo===1?`${y-1}-12`:`${y}-${String(mo-1).padStart(2,'0')}`;}
+function monthLabel(m){if(!m)return'';const[y,mo]=m.split('-').map(Number);return new Date(y,mo-1,1).toLocaleDateString('en-GB',{month:'short'});}
+function fc(n){return'£'+Number(n||0).toFixed(2);}
+function appleCalLink(title,dateStr,notes){const d=dateStr.replace(/-/g,'');const enc=encodeURIComponent;const ics=['BEGIN:VCALENDAR','VERSION:2.0','BEGIN:VEVENT',`DTSTART;VALUE=DATE:${d}`,`DTEND;VALUE=DATE:${d}`,`SUMMARY:${title}`,`DESCRIPTION:${(notes||'').replace(/\n/g,'\\n')}`,'END:VEVENT','END:VCALENDAR'].join('\r\n');return'data:text/calendar;charset=utf8,'+enc(ics);}
+function CalBtn(title,dateStr,notes){return`<a href="${appleCalLink(title,dateStr,notes||'')}" download="${title.replace(/\s/g,'_')}.ics" class="btn-sm btn-cal" style="text-decoration:none;display:inline-block;">📅 Add to Calendar</a>`;}
+function saveSetting(k,v){D.settings[k]=isNaN(v)?v:Number(v);save();}
+function loadSettings(){document.getElementById('set-target').value=D.settings.targetIncome||'';document.getElementById('set-followup').value=D.settings.followUpDays||28;document.getElementById('set-writeup').value=D.settings.writeUpDays||2;}
+function render(){renderDashboard();renderClients();renderSessions();renderFinance();renderContent();renderTodos();loadSettings();}
+function renderDashboard(){
+  const h=new Date().getHours();
+  document.getElementById('greeting').textContent=h<12?'morning':h<17?'afternoon':'evening';
+  document.getElementById('todayDate').textContent=new Date().toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+  const cm=nowMonth();const pm=prevMonth(cm);
+  const sThis=D.sessions.filter(s=>monthKey(s.date)===cm);
+  const sPrev=D.sessions.filter(s=>monthKey(s.date)===pm);
+  const revThis=sThis.reduce((a,s)=>a+Number(s.amount||0),0);
+  const revPrev=sPrev.reduce((a,s)=>a+Number(s.amount||0),0);
+  document.getElementById('dash-revenue').textContent=fc(revThis);
+  document.getElementById('dash-sessions').textContent=sThis.length;
+  document.getElementById('dash-sessions-sub').textContent=`${sPrev.length} last month`;
+  if(revPrev>0){const g=((revThis-revPrev)/revPrev*100).toFixed(1);const el=document.getElementById('dash-growth');el.textContent=`${g>0?'+':''}${g}% vs last month`;el.style.color=g>0?'var(--green)':g<0?'var(--red)':'var(--mid)';}else{document.getElementById('dash-growth').textContent='First month tracked';}
+  const target=D.settings.targetIncome||0;
+  if(target>0){const pct=Math.min(100,(revThis/target)*100);document.getElementById('dash-target-label').textContent=`${fc(revThis)} of ${fc(target)}`;document.getElementById('dash-target-pct').textContent=`${pct.toFixed(0)}%`;document.getElementById('dash-target-bar').style.width=pct+'%';document.getElementById('dash-target-sub').textContent=revThis>=target?'🎉 Target hit!':`${fc(target-revThis)} to go`;}
+  const fup=D.clients.filter(c=>{const last=D.sessions.filter(s=>s.clientId===c.id).sort((a,b)=>b.date.localeCompare(a.date))[0];return daysAgo(last?.date)>=(D.settings.followUpDays||28);});
+  if(fup.length){document.getElementById('dash-followups').style.display='block';document.getElementById('dash-followup-list').innerHTML=fup.map(c=>{const last=D.sessions.filter(s=>s.clientId===c.id).sort((a,b)=>b.date.localeCompare(a.date))[0];return`<div class="todo-item"><div style="flex:1"><span style="font-weight:600">${c.name}</span>${c.dogName?` <span style="color:var(--mid);font-size:12px;">(${c.dogName})</span>`:''}<div style="font-size:11px;color:var(--mid);">${daysAgo(last?.date)} days since last session</div></div></div>`;}).join('');}else{document.getElementById('dash-followups').style.display='none';}
+  const wups=D.sessions.filter(s=>{if(s.writeUpDone)return false;const deadline=writeUpDeadline(s.date);return daysUntil(deadline)<=3&&daysAgo(s.date)>=0;});
+  if(wups.length){document.getElementById('dash-writeups').style.display='block';document.getElementById('dash-writeup-list').innerHTML=wups.map(s=>{const c=D.clients.find(x=>x.id===s.clientId);const deadline=writeUpDeadline(s.date);const due=daysUntil(deadline);return`<div class="todo-item"><div style="flex:1"><span style="font-weight:600">Write-up: ${c?c.name:'Unknown'}${c?.dogName?' & '+c.dogName:''}</span><div style="font-size:11px;color:${due<0?'var(--red)':'var(--mid)'};">Due ${fmtDate(deadline)}${due<0?' — overdue':due===0?' — today':''}</div></div><div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;">${CalBtn('Write-up: '+(c?c.name:'client'),deadline,'Session notes write-up due')}<button class="btn-sm btn-green" onclick="markWriteUpDone('${s.id}')" style="font-size:11px;">✓ Done</button></div></div>`;}).join('');}else{document.getElementById('dash-writeups').style.display='none';}
+  const cdSoon=D.content.filter(c=>c.status!=='posted'&&c.scheduledDate&&daysUntil(c.scheduledDate)<=3);
+  if(cdSoon.length){document.getElementById('dash-content-card').style.display='block';document.getElementById('dash-content-list').innerHTML=cdSoon.map(c=>{const due=daysUntil(c.scheduledDate);return`<div class="todo-item"><div style="flex:1"><span style="font-weight:600">${c.title}</span><div style="font-size:11px;color:var(--mid);">${c.format} · ${due<0?'overdue':due===0?'today':due+' days'}</div></div></div>`;}).join('');}else{document.getElementById('dash-content-card').style.display='none';}
+  const packAlerts=D.clients.filter(c=>{if(!c.packageSize)return false;const used=D.sessions.filter(s=>s.clientId===c.id&&s.type==='Package Session').length;return used>=c.packageSize-1;});
+  if(packAlerts.length){document.getElementById('dash-packages').style.display='block';document.getElementById('dash-package-list').innerHTML=packAlerts.map(c=>{const used=D.sessions.filter(s=>s.clientId===c.id&&s.type==='Package Session').length;return`<div class="todo-item"><div><span style="font-weight:600">${c.name}</span>${c.dogName?` (${c.dogName})`:''}<div style="font-size:11px;color:var(--mid);">${used}/${c.packageSize} sessions used${used>=c.packageSize?' — complete, time to rebook!':' — last session coming up'}</div></div></div>`;}).join('');}else{document.getElementById('dash-packages').style.display='none';}
+}
+function markWriteUpDone(id){const s=D.sessions.find(x=>x.id===id);if(s){s.writeUpDone=true;save();render();}}
+function renderClients(){const el=document.getElementById('client-list');if(!D.clients.length){el.innerHTML='<div class="empty">No clients yet — add your first one!</div>';return;}el.innerHTML=D.clients.map(c=>{const cs=D.sessions.filter(s=>s.clientId===c.id);const last=cs.sort((a,b)=>b.date.localeCompare(a.date))[0];const total=cs.reduce((a,s)=>a+Number(s.amount||0),0);const pkgUsed=cs.filter(s=>s.type==='Package Session').length;const overdue=daysAgo(last?.date)>=(D.settings.followUpDays||28);return`<div class="list-item${overdue?' urgent':''}"><div class="item-row"><div><div class="item-main">${c.name}</div>${c.dogName?`<div class="item-sub">🐕 ${c.dogName}${c.dogBreed?' — '+c.dogBreed:''}</div>`:''}${c.notes?`<div class="item-sub" style="font-style:italic;margin-top:2px;">${c.notes}</div>`:''}</div><div style="text-align:right;"><div class="item-amount">${fc(total)}</div><div class="item-sub">${cs.length} session${cs.length!==1?'s':''}</div>${last?`<div class="item-sub" style="color:${overdue?'var(--red)':'var(--mid)'};">${fmtDate(last.date)}</div>`:''}</div></div>${c.packageSize?`<div style="margin-top:8px;font-size:12px;color:var(--mid);">📦 Package: ${pkgUsed}/${c.packageSize} sessions</div>`:''}<div class="btn-row"><button class="btn-sm" onclick="openModal('client','${c.id}')">Edit</button><button class="btn-sm btn-danger" onclick="deleteItem('clients','${c.id}')">Delete</button></div></div>`;}).join('');}
+function renderSessions(){const el=document.getElementById('session-list');if(!D.sessions.length){el.innerHTML='<div class="empty">No sessions logged yet.</div>';return;}const sorted=[...D.sessions].sort((a,b)=>b.date.localeCompare(a.date));el.innerHTML=sorted.map(s=>{const c=D.clients.find(x=>x.id===s.clientId);const deadline=writeUpDeadline(s.date);return`<div class="list-item"><div class="item-row"><div><div class="item-main">${c?c.name:'Unknown'}${c?.dogName?' & '+c.dogName:''}</div><div class="item-sub">${s.type} · ${fmtDate(s.date)}</div>${s.notes?`<div class="item-sub" style="font-style:italic;">${s.notes}</div>`:''}</div><div style="text-align:right;"><div class="item-amount">${fc(s.amount)}</div>${s.writeUpDone?'<div style="font-size:10px;color:var(--green);">✓ Write-up done</div>':'<div style="font-size:10px;color:var(--mid);">Write-up due '+fmtDate(deadline)+'</div>'}</div></div><div class="btn-row">${!s.writeUpDone?`<button class="btn-sm btn-green" onclick="markWriteUpDone('${s.id}')">✓ Write-up done</button>`:''}${CalBtn('Session: '+(c?c.name:'client'),s.date,s.notes||'')}<button class="btn-sm btn-danger" onclick="deleteItem('sessions','${s.id}')">Delete</button></div></div>`;}).join('');}
+function renderFinance(){const cm=nowMonth();const sThis=D.sessions.filter(s=>monthKey(s.date)===cm);const cThis=D.costs.filter(c=>monthKey(c.date)===cm);const rev=sThis.reduce((a,s)=>a+Number(s.amount||0),0);const costs=cThis.reduce((a,c)=>a+Number(c.amount||0),0);document.getElementById('fin-revenue').textContent=fc(rev);document.getElementById('fin-profit').textContent=fc(rev-costs);document.getElementById('fin-costs-sub').textContent=`After ${fc(costs)} costs`;const months=[];let m=cm;for(let i=0;i<6;i++){months.unshift(m);m=prevMonth(m);}const maxRev=Math.max(...months.map(mo=>D.sessions.filter(s=>monthKey(s.date)===mo).reduce((a,s)=>a+Number(s.amount||0),0)),1);document.getElementById('finance-chart').innerHTML=months.map(mo=>{const r=D.sessions.filter(s=>monthKey(s.date)===mo).reduce((a,s)=>a+Number(s.amount||0),0);const h=Math.round((r/maxRev)*90);return`<div class="bar-wrap"><div class="bar-val">${r>0?'£'+Math.round(r):''}</div><div class="bar" style="height:${h}px;background:${mo===cm?'var(--accent)':'var(--dark)'}"></div><div class="bar-label">${monthLabel(mo)}</div></div>`;}).join('');const el=document.getElementById('cost-list');const sorted=[...D.costs].sort((a,b)=>b.date.localeCompare(a.date));if(!sorted.length){el.innerHTML='<div class="empty">No costs logged.</div>';return;}el.innerHTML=sorted.map(c=>`<div class="list-item"><div class="item-row"><div><div class="item-main">${c.label}</div><div class="item-sub">${c.category} · ${fmtDate(c.date)}</div></div><div style="display:flex;align-items:center;gap:8px;"><div class="item-amount">${fc(c.amount)}</div><button class="btn-sm btn-danger" onclick="deleteItem('costs','${c.id}')">✕</button></div></div></div>`).join('');}
+let contentFilter='all';
+function filterContent(f){contentFilter=f;document.querySelectorAll('[id^="filter-"]').forEach(b=>b.style.fontWeight='');document.getElementById('filter-'+f).style.fontWeight='600';renderContent();}
+function renderContent(){const el=document.getElementById('content-list');let items=[...D.content].sort((a,b)=>(a.scheduledDate||'9999').localeCompare(b.scheduledDate||'9999'));if(contentFilter!=='all')items=items.filter(c=>c.status===contentFilter);if(!items.length){el.innerHTML='<div class="empty">Nothing here yet.</div>';}else{el.innerHTML=items.map(c=>{const statusLabels={idea:'Idea',planned:'Planned',ready:'Ready to post',posted:'Posted'};const due=c.scheduledDate?daysUntil(c.scheduledDate):null;return`<div class="list-item"><div class="item-row"><div style="flex:1"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px;"><div class="item-main">${c.title}</div><span class="content-status status-${c.status}">${statusLabels[c.status]}</span></div><div class="item-sub">${c.format}${c.platform?' · '+c.platform:''}</div>${c.scheduledDate?`<div class="item-sub" style="color:${due<0?'var(--red)':due===0?'var(--accent)':'var(--mid)'};">${due<0?'Overdue — ':due===0?'Today — ':''}${fmtDate(c.scheduledDate)}</div>`:''}${c.notes?`<div class="item-sub" style="font-style:italic;margin-top:3px;">${c.notes}</div>`:''}</div></div><div class="btn-row">${c.status!=='posted'?`<button class="btn-sm btn-green" onclick="markPosted('${c.id}')">✓ Posted</button>`:''}${c.scheduledDate?CalBtn(c.title+' (post)',c.scheduledDate,c.notes||''):''}<button class="btn-sm btn-danger" onclick="deleteItem('content','${c.id}')">Delete</button></div></div>`;}).join('');}const iel=document.getElementById('idea-list');if(!D.ideas.length){iel.innerHTML='<div class="empty">Dump your content ideas here before they disappear!</div>';return;}iel.innerHTML=D.ideas.map(i=>`<div class="list-item"><div class="item-row"><div style="flex:1"><div class="item-main">${i.text}</div>${i.tags?`<div style="margin-top:4px;">${i.tags.split(',').map(t=>`<span class="idea-tag">${t.trim()}</span>`).join('')}</div>`:''}</div><div style="display:flex;gap:6px;"><button class="btn-sm" onclick="ideaToContent('${i.id}')">→ Plan</button><button class="btn-sm btn-danger" onclick="deleteItem('ideas','${i.id}')">✕</button></div></div></div>`).join('');}
+function markPosted(id){const c=D.content.find(x=>x.id===id);if(c){c.status='posted';save();renderContent();}}
+function ideaToContent(id){const i=D.ideas.find(x=>x.id===id);if(i){openModal('content',null,i.text);}}
+function renderTodos(){const el=document.getElementById('todo-list');const incomplete=D.todos.filter(t=>!t.done);const complete=D.todos.filter(t=>t.done);const all=[...incomplete.sort((a,b)=>(a.dueDate||'9999').localeCompare(b.dueDate||'9999')),...complete.slice(0,5)];if(!all.length){el.innerHTML='<div class="empty">Nothing to do — enjoy it while it lasts!</div>';return;}el.innerHTML=all.map(t=>{const due=t.dueDate?daysUntil(t.dueDate):null;const overdue=due!==null&&due<0&&!t.done;return`<div class="todo-item"><div class="todo-check ${t.done?'checked':''}" onclick="toggleTodo('${t.id}')">${t.done?'<svg width="10" height="10" viewBox="0 0 10 10"><polyline points="1.5,5 4,7.5 8.5,2" stroke="white" stroke-width="1.5" fill="none"/></svg>':''}</div><div style="flex:1"><div class="todo-text ${t.done?'checked':''}">${t.text}</div>${t.notes?`<div style="font-size:11px;color:var(--mid);">${t.notes}</div>`:''}</div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">${t.dueDate?`<div class="todo-due ${overdue?'overdue':''}">${overdue?'Overdue':due===0?'Today':fmtDate(t.dueDate)}</div>`:''}${t.dueDate&&!t.done?CalBtn(t.text,t.dueDate,t.notes||''):''}<button class="btn-sm btn-danger" onclick="deleteItem('todos','${t.id}')" style="font-size:10px;padding:3px 8px;">✕</button></div></div>`;}).join('');}
+function toggleTodo(id){const t=D.todos.find(x=>x.id===id);if(t){t.done=!t.done;save();renderTodos();}}
+function deleteItem(collection,id){if(!confirm('Delete this?'))return;D[collection]=D[collection].filter(x=>x.id!==id);save();render();}
+function openModal(type,editId,prefill){const el=document.getElementById('modal-body');if(type==='client')el.innerHTML=clientForm(editId?D.clients.find(c=>c.id===editId):null);else if(type==='session')el.innerHTML=sessionForm();else if(type==='cost')el.innerHTML=costForm();else if(type==='content')el.innerHTML=contentForm(prefill);else if(type==='idea')el.innerHTML=ideaForm();else if(type==='todo')el.innerHTML=todoForm();document.getElementById('modal-overlay').classList.add('open');}
+function closeModal(e){if(e.target===document.getElementById('modal-overlay'))document.getElementById('modal-overlay').classList.remove('open');}
+function closeModalForce(){document.getElementById('modal-overlay').classList.remove('open');}
+function val(id){const el=document.getElementById(id);return el?el.value.trim():'';}
+function clientForm(c){return`<div class="modal-title">${c?'Edit client':'New client'}</div><div class="form-group"><label>Client name *</label><input id="f-name" value="${c?.name||''}" placeholder="e.g. Sarah Jones"></div><div class="form-group"><label>Dog's name</label><input id="f-dog" value="${c?.dogName||''}" placeholder="e.g. Buddy"></div><div class="form-group"><label>Breed</label><input id="f-breed" value="${c?.dogBreed||''}" placeholder="e.g. Labrador"></div><div class="form-group"><label>Package size</label><select id="f-pkg"><option value="0">No package</option><option value="3" ${c?.packageSize==3?'selected':''}>3 sessions</option><option value="5" ${c?.packageSize==5?'selected':''}>5 sessions</option><option value="6" ${c?.packageSize==6?'selected':''}>6 sessions</option><option value="10" ${c?.packageSize==10?'selected':''}>10 sessions</option></select></div><div class="form-group"><label>Notes</label><textarea id="f-notes" placeholder="e.g. Reactive to dogs on lead, nervous owner">${c?.notes||''}</textarea></div><div style="display:flex;gap:10px;margin-top:4px;"><button class="btn" style="flex:1" onclick="saveClient('${c?.id||''}')">Save</button><button class="btn-sm" onclick="closeModalForce()">Cancel</button></div>`;}
+function saveClient(editId){const name=val('f-name');if(!name)return;const obj={name,dogName:val('f-dog'),dogBreed:val('f-breed'),packageSize:Number(document.getElementById('f-pkg').value),notes:val('f-notes')};if(editId){const i=D.clients.findIndex(c=>c.id===editId);D.clients[i]={...D.clients[i],...obj};}else{D.clients.push({...obj,id:uid()});}save();closeModalForce();render();}
+function sessionForm(){const opts=D.clients.map(c=>`<option value="${c.id}">${c.name}${c.dogName?' ('+c.dogName+')':''}</option>`).join('');const types=['1:1 Session','Day Train','Package Session','Consultation','Follow-up','Other'].map(t=>`<option>${t}</option>`).join('');return`<div class="modal-title">Log session</div><div class="form-group"><label>Client *</label><select id="f-client">${opts||'<option value="">Add a client first</option>'}</select></div><div class="form-group"><label>Session type</label><select id="f-type">${types}</select></div><div class="form-group"><label>Date</label><input type="date" id="f-date" value="${today()}"></div><div class="form-group"><label>Amount (£) *</label><input type="number" id="f-amount" placeholder="e.g. 65"></div><div class="form-group"><label>Notes</label><input id="f-notes" placeholder="Quick session notes"></div><div style="display:flex;gap:10px;margin-top:4px;"><button class="btn" style="flex:1" onclick="saveSession()">Save</button><button class="btn-sm" onclick="closeModalForce()">Cancel</button></div>`;}
+function saveSession(){const clientId=val('f-client');const amount=val('f-amount');if(!clientId||!amount)return;D.sessions.push({id:uid(),clientId,type:val('f-type')||'1:1 Session',date:val('f-date')||today(),amount:Number(amount),notes:val('f-notes'),writeUpDone:false});save();closeModalForce();render();}
+function costForm(){const cats=['Fuel','Insurance','Equipment','Training & CPD','Marketing','Software','Other'].map(c=>`<option>${c}</option>`).join('');return`<div class="modal-title">Add cost</div><div class="form-group"><label>Description *</label><input id="f-label" placeholder="e.g. Fuel to Mansfield client"></div><div class="form-group"><label>Category</label><select id="f-cat">${cats}</select></div><div class="form-group"><label>Date</label><input type="date" id="f-date" value="${today()}"></div><div class="form-group"><label>Amount (£) *</label><input type="number" id="f-amount" placeholder="e.g. 12.50"></div><div style="display:flex;gap:10px;margin-top:4px;"><button class="btn" style="flex:1" onclick="saveCost()">Save</button><button class="btn-sm" onclick="closeModalForce()">Cancel</button></div>`;}
+function saveCost(){const label=val('f-label');const amount=val('f-amount');if(!label||!amount)return;D.costs.push({id:uid(),label,category:val('f-cat')||'Other',date:val('f-date')||today(),amount:Number(amount)});save();closeModalForce();render();}
+function contentForm(prefill){const formats=['Carousel','Reel','Static post','Story','Other'].map(f=>`<option>${f}</option>`).join('');const statuses=['idea','planned','ready','posted'].map(s=>`<option value="${s}">${{idea:'Idea',planned:'Planned',ready:'Ready to post',posted:'Posted'}[s]}</option>`).join('');const platforms=['Instagram','Facebook','Both'].map(p=>`<option>${p}</option>`).join('');return`<div class="modal-title">Add content</div><div class="form-group"><label>Title / topic *</label><input id="f-title" value="${prefill||''}" placeholder="e.g. What is proofing?"></div><div class="form-group"><label>Format</label><select id="f-format">${formats}</select></div><div class="form-group"><label>Platform</label><select id="f-platform">${platforms}</select></div><div class="form-group"><label>Status</label><select id="f-status">${statuses}</select></div><div class="form-group"><label>Scheduled date</label><input type="date" id="f-date"></div><div class="form-group"><label>Notes / caption ideas</label><textarea id="f-notes" placeholder="Any notes, angles, caption ideas..."></textarea></div><div style="display:flex;gap:10px;margin-top:4px;"><button class="btn" style="flex:1" onclick="saveContent()">Save</button><button class="btn-sm" onclick="closeModalForce()">Cancel</button></div>`;}
+function saveContent(){const title=val('f-title');if(!title)return;D.content.push({id:uid(),title,format:val('f-format')||'Carousel',platform:val('f-platform')||'Both',status:val('f-status')||'idea',scheduledDate:val('f-date')||null,notes:val('f-notes')});save();closeModalForce();render();}
+function ideaForm(){return`<div class="modal-title">💡 New idea</div><div class="form-group"><label>Idea *</label><textarea id="f-text" placeholder="e.g. Why your dog isn't 'being stubborn' — what's really going on" rows="3"></textarea></div><div class="form-group"><label>Tags (comma separated)</label><input id="f-tags" placeholder="e.g. reactivity, carousel, educational"></div><div style="display:flex;gap:10px;margin-top:4px;"><button class="btn" style="flex:1" onclick="saveIdea()">Save idea</button><button class="btn-sm" onclick="closeModalForce()">Cancel</button></div>`;}
+function saveIdea(){const text=val('f-text');if(!text)return;D.ideas.push({id:uid(),text,tags:val('f-tags')});save();closeModalForce();renderContent();}
+function todoForm(){return`<div class="modal-title">New to-do</div><div class="form-group"><label>Task *</label><input id="f-text" placeholder="e.g. Email back enquiry about reactive spaniel"></div><div class="form-group"><label>Notes</label><input id="f-notes" placeholder="Any extra detail"></div><div class="form-group"><label>Due date</label><input type="date" id="f-date"></div><div style="display:flex;gap:10px;margin-top:4px;"><button class="btn" style="flex:1" onclick="saveTodo()">Save</button><button class="btn-sm" onclick="closeModalForce()">Cancel</button></div>`;}
+function saveTodo(){const text=val('f-text');if(!text)return;D.todos.push({id:uid(),text,notes:val('f-notes'),dueDate:val('f-date')||null,done:false});save();closeModalForce();renderTodos();}
+function exportData(){const blob=new Blob([JSON.stringify(D,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='petshil-backup.json';a.click();}
+function clearData(){if(confirm('This will delete ALL your data. Are you sure?')){localStorage.removeItem(STORE);D=load();save();render();}}
+render();
+</script>
+</body>
+</html>
