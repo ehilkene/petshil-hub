@@ -1,6 +1,4 @@
-
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -540,49 +538,48 @@ function saveAmount(sid) {
 
 function clientForm(c) {
   return `<div class="modal-title">${c?'Edit client':'New client'}</div><div class="form-group"><label>Client name *</label><input id="f-name" value="${c?.name||''}" placeholder="e.g. Sarah Jones"></div><div class="form-group"><label>Dog's name</label><input id="f-dog" value="${c?.dogName||''}" placeholder="e.g. Buddy"></div><div class="form-group"><label>Breed</label><input id="f-breed" value="${c?.dogBreed||''}" placeholder="e.g. Labrador"></div><div class="form-group"><label>Package size</label><select id="f-pkg"><option value="0">No package</option>${[3,4,5,6,10].map(n=>`<option value="${n}"${c?.packageSize==n?' selected':''}>${n} sessions</option>`).join('')}</select></div><div class="form-group"><label>Notes</label><textarea id="f-notes" placeholder="e.g. Reactive to dogs on lead, nervous owner">${c?.notes||''}</textarea></div><div style="display:flex;gap:10px;margin-top:4px;"><button class="btn" style="flex:1" onclick="saveClient('${c?.id||''}')">Save</button><button class="btn-sm" onclick="closeModalForce()">Cancel</button></div>`;
-
 }
 function saveClient(editId) {
-const name=val(‘f-name’); if(!name)return;
-const obj={name,dogName:val(‘f-dog’),dogBreed:val(‘f-breed’),packageSize:Number(document.getElementById(‘f-pkg’).value),notes:val(‘f-notes’)};
-if(editId){const i=D.clients.findIndex(c=>c.id===editId);D.clients[i]={…D.clients[i],…obj};}
-else{D.clients.push({…obj,id:uid()});}
-save(‘clients’); closeModalForce(); render();
+  const name=val('f-name'); if(!name)return;
+  const obj={name,dogName:val('f-dog'),dogBreed:val('f-breed'),packageSize:Number(document.getElementById('f-pkg').value),notes:val('f-notes')};
+  if(editId){const i=D.clients.findIndex(c=>c.id===editId);D.clients[i]={...D.clients[i],...obj};}
+  else{D.clients.push({...obj,id:uid()});}
+  save('clients'); closeModalForce(); render();
 }
 
 function costForm() {
-const cats=[‘Fuel’,‘Insurance’,‘Equipment’,‘Training & CPD’,‘Marketing’,‘Software’,‘Other’];
-return `<div class="modal-title">Add cost</div><div class="form-group"><label>Description *</label><input id="f-label" placeholder="e.g. Fuel to Mansfield client"></div><div class="form-group"><label>Category</label><select id="f-cat">${cats.map(c=>`<option>${c}</option>`).join('')}</select></div><div class="form-group"><label>Date</label><input type="date" id="f-date" value="${today()}"></div><div class="form-group"><label>Amount (£) *</label><input type="number" id="f-amount" placeholder="e.g. 12.50"></div><div style="display:flex;gap:10px;margin-top:4px;"><button class="btn" style="flex:1" onclick="saveCost()">Save</button><button class="btn-sm" onclick="closeModalForce()">Cancel</button></div>`;
+  const cats=['Fuel','Insurance','Equipment','Training & CPD','Marketing','Software','Other'];
+  return `<div class="modal-title">Add cost</div><div class="form-group"><label>Description *</label><input id="f-label" placeholder="e.g. Fuel to Mansfield client"></div><div class="form-group"><label>Category</label><select id="f-cat">${cats.map(c=>`<option>${c}</option>`).join('')}</select></div><div class="form-group"><label>Date</label><input type="date" id="f-date" value="${today()}"></div><div class="form-group"><label>Amount (£) *</label><input type="number" id="f-amount" placeholder="e.g. 12.50"></div><div style="display:flex;gap:10px;margin-top:4px;"><button class="btn" style="flex:1" onclick="saveCost()">Save</button><button class="btn-sm" onclick="closeModalForce()">Cancel</button></div>`;
 }
 function saveCost() {
-const label=val(‘f-label’); const amount=val(‘f-amount’); if(!label||!amount)return;
-D.costs.push({id:uid(),label,category:val(‘f-cat’)||‘Other’,date:val(‘f-date’)||today(),amount:Number(amount)});
-save(‘costs’); closeModalForce(); render();
+  const label=val('f-label'); const amount=val('f-amount'); if(!label||!amount)return;
+  D.costs.push({id:uid(),label,category:val('f-cat')||'Other',date:val('f-date')||today(),amount:Number(amount)});
+  save('costs'); closeModalForce(); render();
 }
 
 function contentForm(prefill) {
-const formats=[‘Carousel’,‘Reel’,‘Static post’,‘Story’,‘Other’];
-const statuses=[[‘idea’,‘Idea’],[‘planned’,‘Planned’],[‘ready’,‘Ready to post’],[‘posted’,‘Posted’]];
-const platforms=[‘Instagram’,‘Facebook’,‘Both’];
-return `<div class="modal-title">Add content</div><div class="form-group"><label>Title / topic *</label><input id="f-title" value="${prefill||''}" placeholder="e.g. What is proofing?"></div><div class="form-group"><label>Format</label><select id="f-format">${formats.map(f=>`<option>${f}</option>`).join('')}</select></div><div class="form-group"><label>Platform</label><select id="f-platform">${platforms.map(p=>`<option>${p}</option>`).join('')}</select></div><div class="form-group"><label>Status</label><select id="f-status">${statuses.map(([v,l])=>`<option value="${v}">${l}</option>`).join('')}</select></div><div class="form-group"><label>Scheduled date</label><input type="date" id="f-date"></div><div class="form-group"><label>Notes / caption ideas</label><textarea id="f-notes" placeholder="Any notes, angles, caption ideas..."></textarea></div><div style="display:flex;gap:10px;margin-top:4px;"><button class="btn" style="flex:1" onclick="saveContent()">Save</button><button class="btn-sm" onclick="closeModalForce()">Cancel</button></div>`;
+  const formats=['Carousel','Reel','Static post','Story','Other'];
+  const statuses=[['idea','Idea'],['planned','Planned'],['ready','Ready to post'],['posted','Posted']];
+  const platforms=['Instagram','Facebook','Both'];
+  return `<div class="modal-title">Add content</div><div class="form-group"><label>Title / topic *</label><input id="f-title" value="${prefill||''}" placeholder="e.g. What is proofing?"></div><div class="form-group"><label>Format</label><select id="f-format">${formats.map(f=>`<option>${f}</option>`).join('')}</select></div><div class="form-group"><label>Platform</label><select id="f-platform">${platforms.map(p=>`<option>${p}</option>`).join('')}</select></div><div class="form-group"><label>Status</label><select id="f-status">${statuses.map(([v,l])=>`<option value="${v}">${l}</option>`).join('')}</select></div><div class="form-group"><label>Scheduled date</label><input type="date" id="f-date"></div><div class="form-group"><label>Notes / caption ideas</label><textarea id="f-notes" placeholder="Any notes, angles, caption ideas..."></textarea></div><div style="display:flex;gap:10px;margin-top:4px;"><button class="btn" style="flex:1" onclick="saveContent()">Save</button><button class="btn-sm" onclick="closeModalForce()">Cancel</button></div>`;
 }
 function saveContent() {
-const title=val(‘f-title’); if(!title)return;
-D.content.push({id:uid(),title,format:val(‘f-format’)||‘Carousel’,platform:val(‘f-platform’)||‘Both’,status:val(‘f-status’)||‘idea’,scheduledDate:val(‘f-date’)||null,notes:val(‘f-notes’)});
-save(‘content’); closeModalForce(); render();
+  const title=val('f-title'); if(!title)return;
+  D.content.push({id:uid(),title,format:val('f-format')||'Carousel',platform:val('f-platform')||'Both',status:val('f-status')||'idea',scheduledDate:val('f-date')||null,notes:val('f-notes')});
+  save('content'); closeModalForce(); render();
 }
 
 function ideaForm() {
-return `<div class="modal-title">💡 New idea</div><div class="form-group"><label>Idea *</label><textarea id="f-text" placeholder="e.g. Why your dog isn't 'being stubborn' — what's really going on" rows="3"></textarea></div><div class="form-group"><label>Tags (comma separated)</label><input id="f-tags" placeholder="e.g. reactivity, carousel, educational"></div><div style="display:flex;gap:10px;margin-top:4px;"><button class="btn" style="flex:1" onclick="saveIdea()">Save idea</button><button class="btn-sm" onclick="closeModalForce()">Cancel</button></div>`;
+  return `<div class="modal-title">💡 New idea</div><div class="form-group"><label>Idea *</label><textarea id="f-text" placeholder="e.g. Why your dog isn't 'being stubborn' — what's really going on" rows="3"></textarea></div><div class="form-group"><label>Tags (comma separated)</label><input id="f-tags" placeholder="e.g. reactivity, carousel, educational"></div><div style="display:flex;gap:10px;margin-top:4px;"><button class="btn" style="flex:1" onclick="saveIdea()">Save idea</button><button class="btn-sm" onclick="closeModalForce()">Cancel</button></div>`;
 }
-function saveIdea() { const text=val(‘f-text’); if(!text)return; D.ideas.push({id:uid(),text,tags:val(‘f-tags’)}); save(‘ideas’); closeModalForce(); renderContent(); }
+function saveIdea() { const text=val('f-text'); if(!text)return; D.ideas.push({id:uid(),text,tags:val('f-tags')}); save('ideas'); closeModalForce(); renderContent(); }
 
 function todoForm() {
-return `<div class="modal-title">New to-do</div><div class="form-group"><label>Task *</label><input id="f-text" placeholder="e.g. Email back enquiry about reactive spaniel"></div><div class="form-group"><label>Notes</label><input id="f-notes" placeholder="Any extra detail"></div><div class="form-group"><label>Due date</label><input type="date" id="f-date"></div><div style="display:flex;gap:10px;margin-top:4px;"><button class="btn" style="flex:1" onclick="saveTodo()">Save</button><button class="btn-sm" onclick="closeModalForce()">Cancel</button></div>`;
+  return `<div class="modal-title">New to-do</div><div class="form-group"><label>Task *</label><input id="f-text" placeholder="e.g. Email back enquiry about reactive spaniel"></div><div class="form-group"><label>Notes</label><input id="f-notes" placeholder="Any extra detail"></div><div class="form-group"><label>Due date</label><input type="date" id="f-date"></div><div style="display:flex;gap:10px;margin-top:4px;"><button class="btn" style="flex:1" onclick="saveTodo()">Save</button><button class="btn-sm" onclick="closeModalForce()">Cancel</button></div>`;
 }
-function saveTodo() { const text=val(‘f-text’); if(!text)return; D.todos.push({id:uid(),text,notes:val(‘f-notes’),dueDate:val(‘f-date’)||null,done:false}); save(‘todos’); closeModalForce(); renderTodos(); }
+function saveTodo() { const text=val('f-text'); if(!text)return; D.todos.push({id:uid(),text,notes:val('f-notes'),dueDate:val('f-date')||null,done:false}); save('todos'); closeModalForce(); renderTodos(); }
 
-function clearData() { if(confirm(‘This will delete ALL your data everywhere. Are you sure?’)){D={clients:[],sessions:[],costs:[],content:[],ideas:[],todos:[],settings:{targetIncome:1500,followUpDays:28,writeUpDays:2}};save();render();} }
+function clearData() { if(confirm('This will delete ALL your data everywhere. Are you sure?')){D={clients:[],sessions:[],costs:[],content:[],ideas:[],todos:[],settings:{targetIncome:1500,followUpDays:28,writeUpDays:2}};save();render();} }
 
 // ===================== INIT =====================
 currentWeekStart = getWeekStart(today());
@@ -590,6 +587,5 @@ loadLocal();
 render();
 loadFromCloud().then(() => syncAcuity());
 </script>
-
 </body>
 </html>
